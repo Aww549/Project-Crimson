@@ -1,12 +1,13 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public enum WaveType { Gauntlet, Loot }
+public enum WaveType { Gauntlet, Loot, Runner }
 
 public class Spawner : MonoBehaviour
 {
     [Header("References")]
     public GameObject zombiePrefab;
+    public GameObject runnerZombiePrefab; // The new Runner Zombie prefab
     public GameObject[] gatePrefabs;
     public GameObject scrapPrefab;
     public Transform playerTransform;
@@ -21,6 +22,8 @@ public class Spawner : MonoBehaviour
     [Header("Wave Type Probability")]
     [Range(0, 1)]
     public float lootWaveChance = 0.25f;
+    [Range(0, 1)]
+    public float runnerWaveChance = 0.15f; // Chance a Gauntlet wave is replaced by a Runner wave
 
     [Header("Difficulty Scaling")]
     private int waveNumber = 0;
@@ -61,7 +64,9 @@ public class Spawner : MonoBehaviour
         waveNumber++;
 
         float chance = Random.value;
-        if (lastWaveType == WaveType.Loot && chance < 0.9f)
+
+        // If the last wave was Loot or Runner, force a Gauntlet wave to provide a gate.
+        if ((lastWaveType == WaveType.Loot || lastWaveType == WaveType.Runner) && chance < 0.9f)
         {
             SpawnGauntletWave();
             lastWaveType = WaveType.Gauntlet;
@@ -73,8 +78,17 @@ public class Spawner : MonoBehaviour
         }
         else
         {
-            SpawnGauntletWave();
-            lastWaveType = WaveType.Gauntlet;
+            // This is a normal wave, decide between Gauntlet or Runner
+            if (Random.value < runnerWaveChance)
+            {
+                SpawnRunnerWave();
+                lastWaveType = WaveType.Runner;
+            }
+            else
+            {
+                SpawnGauntletWave();
+                lastWaveType = WaveType.Gauntlet;
+            }
         }
 
         nextSpawnZ += distanceBetweenRows;
@@ -146,6 +160,27 @@ public class Spawner : MonoBehaviour
         if (makeElite)
         {
             zombieLogic.MakeElite(eliteColor);
+        }
+    }
+
+    void SpawnRunnerWave()
+    {
+        Debug.Log("Spawning a Runner Wave!");
+        int runnersToSpawn = Random.Range(1, 3); // Spawn 1 or 2 runners
+        float zombieHealthForThisWave = baseZombieHealth + (waveNumber * healthPerWave);
+
+        for (int i = 0; i < runnersToSpawn; i++)
+        {
+            int randomLane = Random.Range(0, 2);
+            float runnerX = (randomLane - 0.5f) * laneDistance;
+            // Stagger them slightly so they don't overlap perfectly
+            float runnerZ = nextSpawnZ + (i * 3.0f);
+            Vector3 runnerPos = new Vector3(runnerX, 1f, runnerZ);
+
+            // Instantiate the runner prefab
+            GameObject runnerObj = Instantiate(runnerZombiePrefab, runnerPos, Quaternion.identity);
+            ZombieLogic zombieLogic = runnerObj.GetComponent<ZombieLogic>();
+            zombieLogic.SetInitialHealth(zombieHealthForThisWave);
         }
     }
 
