@@ -1,0 +1,57 @@
+# =============== #
+# Unity generated #
+# =============== #
+
+# The main build folder
+/Builds/
+
+# Unity-generated Library folder
+/Library/
+
+# Unity-generated Temp folder
+/Temp/
+
+# Object folder, contains intermediate compilation files
+/Obj/
+
+# Visual Studio temporary files
+.vs/
+
+# Gitignore files
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+# Unity-generated debug info
+*.pdb
+
+# Build output
+*.exe
+*.dll
+*.so
+*.a
+*.dylib
+*.apk
+*.xapk
+*.xap
+
+# Unity-specific files to ignore
+[Ll]ocal*
+*.~
+*.log
+*.asset
+*.meta
+*.unitypackage
+
+# Bursted files
+*BurstDebugInformation_DoNotShip*
+
+# My Custom Additions
+# This specifically targets the build data folders
+# which seem to be the source of the issue.
+# We will ignore these entirely to get a clean commit.
+*/Project Crimson_Data/*
+*/MonoBleedingEdge/*
