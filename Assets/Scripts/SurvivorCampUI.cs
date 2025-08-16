@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,7 +29,6 @@ public class SurvivorCampUI : MonoBehaviour
     public string mainGameSceneName = "SampleScene";
     public string mainMenuSceneName = "MainMenu";
 
-    // All other public variables from your original script
     #region Public UI References
     [Header("--- Upgrades UI ---")]
     public TextMeshProUGUI totalScrapText;
@@ -69,20 +69,32 @@ public class SurvivorCampUI : MonoBehaviour
     {
         // Create a list of all CanvasGroups for easy management.
         allPanelCGs = new List<CanvasGroup> { upgradesCG, sanctuaryMainCG, sanctuaryDetailsCG, sanctuarySelectionCG };
+
+        // DEFINITIVE FIX: Ensure all panels are disabled on awake to prevent user interaction
+        // before the GameDataManager is ready and the UI has been initialized.
+        foreach (var cg in allPanelCGs)
+        {
+            if (cg != null) SetCanvasGroupState(cg, false);
+        }
     }
 
-    void Start()
+    // DEFINITIVE FIX: Use a coroutine to wait for the GameDataManager singleton.
+    private IEnumerator Start()
     {
-        // Set the initial state of the UI to the Upgrades panel.
+        // Wait until the GameDataManager singleton has been initialized.
+        // This is the core fix that prevents all null reference errors.
+        yield return new WaitUntil(() => GameDataManager.Instance != null);
+
+        // Now that the manager is ready, it's safe to proceed with UI setup.
         ChangeState(UIPanel.Upgrades);
     }
 
     /// <summary>
-    /// The single, authoritative function for changing the visible UI panel. This is the core of the fix.
+    /// The single, authoritative function for changing the visible UI panel.
     /// </summary>
     private void ChangeState(UIPanel newState)
     {
-        // 1. Turn ALL panels off. This prevents layering issues.
+        // 1. Turn ALL panels off to prevent layering issues.
         foreach (var cg in allPanelCGs)
         {
             SetCanvasGroupState(cg, false);
@@ -151,7 +163,6 @@ public class SurvivorCampUI : MonoBehaviour
 
     public void BackFromSelectionToDetails()
     {
-        // When going back from selection, we just need to re-show the details panel.
         ChangeState(UIPanel.Sanctuary_Details);
     }
 
@@ -161,14 +172,14 @@ public class SurvivorCampUI : MonoBehaviour
         {
             MissionController.Instance.StartMission(selectedMission, selectedSurvivorsForMission);
             selectedMission = null;
-            ChangeState(UIPanel.Sanctuary_Main); // Go back to main view after starting
+            ChangeState(UIPanel.Sanctuary_Main);
         }
     }
 
     public void GoToMainMenu() => SceneManager.LoadScene(mainMenuSceneName);
     public void OnStartRunClicked() => SceneManager.LoadScene(mainGameSceneName);
 
-    #region Unchanged Code (Your Original Logic)
+    #region Original Logic (Now Safe to Call)
     public void OnSurvivorToggleChanged(Survivor survivor, bool isSelected)
     {
         if (isSelected)
@@ -184,7 +195,6 @@ public class SurvivorCampUI : MonoBehaviour
 
     public void UpdateUpgradesUI()
     {
-        if (GameDataManager.Instance == null) return;
         totalScrapText.text = "SCRAP: " + GameDataManager.Instance.gameData.totalScrap;
         int damageLevel = GameDataManager.Instance.gameData.damageUpgradeLevel;
         damageLevelText.text = "LVL " + damageLevel;
@@ -210,7 +220,7 @@ public class SurvivorCampUI : MonoBehaviour
     private void PopulateSurvivorList()
     {
         foreach (Transform child in survivorListContent.transform) { Destroy(child.gameObject); }
-        if (GameDataManager.Instance == null || GameDataManager.Instance.gameData.sanctuarySurvivors.Count == 0) return;
+        if (GameDataManager.Instance.gameData.sanctuarySurvivors.Count == 0) return;
         foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
         {
             GameObject newItem = Instantiate(survivorListItemPrefab, survivorListContent.transform);
