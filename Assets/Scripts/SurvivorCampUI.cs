@@ -1,3 +1,7 @@
+// SurvivorCampUI.cs - Complete Rewrite by Jules
+// Architecture: State Machine controlling CanvasGroups.
+// Objective: Resolve UI rendering bugs by providing a stable, drop-in replacement.
+
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -7,24 +11,29 @@ using System.Linq;
 
 public class SurvivorCampUI : MonoBehaviour
 {
-    // Enum to define the possible UI states within the Sanctuary
-    private enum SanctuaryState { Main, MissionDetails, SurvivorSelection }
+    /// <summary>
+    /// Defines the primary UI states for the Survivor Camp screen.
+    /// Each state corresponds to a distinct CanvasGroup-controlled panel.
+    /// </summary>
+    private enum UIPanel
+    {
+        Upgrades,
+        Sanctuary_Main,
+        Sanctuary_Details,
+        Sanctuary_Selection
+    }
 
-    #region Variables
-    [Header("--- Main Panels ---")]
-    public GameObject upgradesPanel;
-    public GameObject sanctuaryPanel;
+    private UIPanel currentPanelState;
 
-    [Header("--- Sanctuary Sub-Panels (Canvas Groups) ---")]
-    [Tooltip("The GameObject that holds the two scroll views (e.g., 'MainView').")]
-    public GameObject mainViewPanel;
-    public GameObject missionDetailsPanel;
-    public GameObject survivorSelectionPanel;
-
-    // Private Canvas Group references
-    private CanvasGroup mainViewCG;
-    private CanvasGroup missionDetailsPanelCG;
-    private CanvasGroup survivorSelectionPanelCG;
+    [Header("--- UI Panel Canvas Groups ---")]
+    [Tooltip("CanvasGroup for the main Upgrades panel.")]
+    public CanvasGroup upgradesCG;
+    [Tooltip("CanvasGroup for the main Sanctuary view (roster and missions).")]
+    public CanvasGroup sanctuaryMainCG;
+    [Tooltip("CanvasGroup for the Mission Details view.")]
+    public CanvasGroup sanctuaryDetailsCG;
+    [Tooltip("CanvasGroup for the Survivor Selection view for a mission.")]
+    public CanvasGroup sanctuarySelectionCG;
 
     [Header("--- Scene Management ---")]
     public string mainGameSceneName = "SampleScene";
@@ -59,116 +68,130 @@ public class SurvivorCampUI : MonoBehaviour
     public GameObject survivorSelectionItemPrefab;
     public Button startMissionButton;
 
+    // Private state variables
     private MissionData selectedMission;
     private List<Survivor> selectedSurvivorsForMission = new List<Survivor>();
-    #endregion
+    private List<CanvasGroup> allPanelCGs;
+
+    #region Unity Lifecycle & State Machine
 
     void Awake()
     {
-        // Get the CanvasGroup components from our panels
-        mainViewCG = mainViewPanel.GetComponent<CanvasGroup>();
-        missionDetailsPanelCG = missionDetailsPanel.GetComponent<CanvasGroup>();
-        survivorSelectionPanelCG = survivorSelectionPanel.GetComponent<CanvasGroup>();
+        // Populate the list of all canvas groups for easy management
+        allPanelCGs = new List<CanvasGroup>
+        {
+            upgradesCG,
+            sanctuaryMainCG,
+            sanctuaryDetailsCG,
+            sanctuarySelectionCG
+        };
     }
 
     void Start()
     {
-        // Start by showing the upgrades panel by default
-        ShowUpgradesPanel();
+        // Set the initial state of the UI
+        ChangeState(UIPanel.Upgrades);
+        UpdateUpgradesUI();
     }
 
     /// <summary>
-    /// The single, authoritative function for changing the UI state within the Sanctuary.
+    /// The single, authoritative function for changing the visible UI panel.
     /// </summary>
-    private void ChangeSanctuaryState(SanctuaryState newState)
+    private void ChangeState(UIPanel newState)
     {
-        // Set all panels to invisible by default
-        SetPanelVisibility(mainViewCG, false);
-        SetPanelVisibility(missionDetailsPanelCG, false);
-        SetPanelVisibility(survivorSelectionPanelCG, false);
+        currentPanelState = newState;
 
-        // Then, activate the one we want
+        // Disable all panels first
+        foreach (var cg in allPanelCGs)
+        {
+            SetCanvasGroupState(cg, false);
+        }
+
+        // Enable the target panel
         switch (newState)
         {
-            case SanctuaryState.Main:
-                SetPanelVisibility(mainViewCG, true);
+            case UIPanel.Upgrades:
+                SetCanvasGroupState(upgradesCG, true);
                 break;
-            case SanctuaryState.MissionDetails:
-                SetPanelVisibility(missionDetailsPanelCG, true);
+            case UIPanel.Sanctuary_Main:
+                SetCanvasGroupState(sanctuaryMainCG, true);
                 break;
-            case SanctuaryState.SurvivorSelection:
-                SetPanelVisibility(survivorSelectionPanelCG, true);
+            case UIPanel.Sanctuary_Details:
+                SetCanvasGroupState(sanctuaryDetailsCG, true);
+                break;
+            case UIPanel.Sanctuary_Selection:
+                SetCanvasGroupState(sanctuarySelectionCG, true);
                 break;
         }
     }
 
     /// <summary>
     /// Controls the visibility and interactivity of a UI panel using its CanvasGroup.
+    /// This is the ONLY method that should be used to show/hide panels.
     /// </summary>
-    private void SetPanelVisibility(CanvasGroup cg, bool isVisible)
+    private void SetCanvasGroupState(CanvasGroup cg, bool active)
     {
-        if (cg == null) return;
-        cg.alpha = isVisible ? 1f : 0f;
-        cg.interactable = isVisible;
-        cg.blocksRaycasts = isVisible;
+        if (cg == null)
+        {
+            Debug.LogWarning($"A CanvasGroup is not assigned in the SurvivorCampUI inspector.", this);
+            return;
+        }
+        cg.alpha = active ? 1f : 0f;
+        cg.interactable = active;
+        cg.blocksRaycasts = active;
     }
+
+    #endregion
+
+    #region Public UI Methods (Button Hooks)
 
     // --- Main Panel Toggling ---
 
     public void ShowUpgradesPanel()
     {
-        upgradesPanel.SetActive(true);
-        sanctuaryPanel.SetActive(false);
+        ChangeState(UIPanel.Upgrades);
         UpdateUpgradesUI();
     }
 
     public void ShowSanctuaryPanel()
     {
-        upgradesPanel.SetActive(false);
-        sanctuaryPanel.SetActive(true);
-        ChangeSanctuaryState(SanctuaryState.Main);
+        ChangeState(UIPanel.Sanctuary_Main);
         RefreshSanctuaryUI();
     }
 
-    // --- State Change Triggers ---
+    // --- Sanctuary State Changes ---
 
     public void ShowMissionDetails(MissionData missionData)
     {
         selectedMission = missionData;
-        ChangeSanctuaryState(SanctuaryState.MissionDetails);
+        selectedSurvivorsForMission.Clear(); // Clear previous selections
 
-        // Populate UI using your original variable names
-        selectedSurvivorsForMission.Clear();
+        // Populate Details Panel UI
         missionNameText.text = missionData.missionName;
-        missionDescriptionText.text = missionData.description; // Corrected
-        missionRewardText.text = $"Base Reward: {missionData.baseRewardAmount} {missionData.rewardType}"; // Corrected
-        missionDurationText.text = $"Duration: {missionData.durationHours} Hours"; // Corrected
-        UpdateSuccessChanceDisplay();
-    }
+        missionDescriptionText.text = missionData.description;
+        missionRewardText.text = $"Base Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
+        missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
 
-    public void ReturnToMainSanctuaryView()
-    {
-        selectedMission = null;
-        ChangeSanctuaryState(SanctuaryState.Main);
+        UpdateSuccessChanceDisplay();
+        ChangeState(UIPanel.Sanctuary_Details);
     }
 
     public void OpenSurvivorSelection()
     {
         if (selectedMission == null) return;
-        ChangeSanctuaryState(SanctuaryState.SurvivorSelection);
+        ChangeState(UIPanel.Sanctuary_Selection);
         PopulateSurvivorSelectionList();
     }
 
-    public void CloseSurvivorSelection()
+    public void ReturnToMainSanctuaryView()
     {
-        if (selectedMission != null)
-        {
-            ChangeSanctuaryState(SanctuaryState.MissionDetails);
-        }
-        else
-        {
-            ChangeSanctuaryState(SanctuaryState.Main);
-        }
+        selectedMission = null;
+        ChangeState(UIPanel.Sanctuary_Main);
+    }
+
+    public void BackFromSelectionToDetails()
+    {
+        ChangeState(UIPanel.Sanctuary_Details);
     }
 
     public void OnStartMissionClicked()
@@ -177,25 +200,66 @@ public class SurvivorCampUI : MonoBehaviour
         {
             MissionController.Instance.StartMission(selectedMission, selectedSurvivorsForMission);
             selectedMission = null;
-            ChangeSanctuaryState(SanctuaryState.Main);
+            ChangeState(UIPanel.Sanctuary_Main);
             RefreshSanctuaryUI();
         }
     }
 
-    #region Unchanged Methods (Your Original Code)
+    // --- Scene Navigation ---
+
+    public void GoToMainMenu()
+    {
+        SceneManager.LoadScene(mainMenuSceneName);
+    }
+
+    public void OnStartRunClicked()
+    {
+        SceneManager.LoadScene(mainGameSceneName);
+    }
+
+    // --- Upgrade Purchases ---
+
+    public void OnPurchaseDamageClicked()
+    {
+        if (GameDataManager.Instance.TryPurchaseDamageUpgrade()) UpdateUpgradesUI();
+    }
+
+    public void OnPurchaseFirstAidKitClicked()
+    {
+        if (GameDataManager.Instance.TryPurchaseFirstAidKitUpgrade()) UpdateUpgradesUI();
+    }
+
+    public void OnPurchaseScrapValueClicked()
+    {
+        if (GameDataManager.Instance.TryPurchaseScrapValueUpgrade()) UpdateUpgradesUI();
+    }
+
+    public void OnPurchaseStartingSurvivorsClicked()
+    {
+        if (GameDataManager.Instance.TryPurchaseStartingSurvivorsUpgrade()) UpdateUpgradesUI();
+    }
+
+    #endregion
+
+    #region UI Population & Data Handling
+
     public void UpdateUpgradesUI()
     {
         if (GameDataManager.Instance == null) return;
         totalScrapText.text = "SCRAP: " + GameDataManager.Instance.gameData.totalScrap;
+
         int damageLevel = GameDataManager.Instance.gameData.damageUpgradeLevel;
         damageLevelText.text = "LVL " + damageLevel;
         damageCostText.text = GameDataManager.Instance.GetUpgradeCost(damageLevel) + " SCRAP";
+
         int startingSurvivorsLevel = GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel;
         startingSurvivorsLevelText.text = "LVL " + startingSurvivorsLevel;
         startingSurvivorsCostText.text = GameDataManager.Instance.GetUpgradeCost(startingSurvivorsLevel) + " SCRAP";
+
         int scrapValueLevel = GameDataManager.Instance.gameData.scrapValueUpgradeLevel;
         scrapValueLevelText.text = "LVL " + scrapValueLevel;
         scrapValueCostText.text = GameDataManager.Instance.GetUpgradeCost(scrapValueLevel) + " SCRAP";
+
         int shieldLevel = GameDataManager.Instance.gameData.firstAidKitLevel;
         firstAidKitLevelText.text = "LVL " + shieldLevel;
         if (shieldLevel >= 2) { firstAidKitCostText.text = "MAX"; }
@@ -211,12 +275,11 @@ public class SurvivorCampUI : MonoBehaviour
     private void PopulateSurvivorList()
     {
         foreach (Transform child in survivorListContent.transform) { Destroy(child.gameObject); }
-        if (GameDataManager.Instance == null || GameDataManager.Instance.gameData.sanctuarySurvivors.Count == 0) { return; }
-        foreach (Survivor survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
+        if (GameDataManager.Instance == null || GameDataManager.Instance.gameData.sanctuarySurvivors.Count == 0) return;
+        foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
         {
             GameObject newItem = Instantiate(survivorListItemPrefab, survivorListContent.transform);
-            var itemUI = newItem.GetComponent<SurvivorListItemUI>();
-            if (itemUI != null) { itemUI.Setup(survivor); }
+            newItem.GetComponent<SurvivorListItemUI>()?.Setup(survivor);
         }
     }
 
@@ -224,24 +287,23 @@ public class SurvivorCampUI : MonoBehaviour
     {
         foreach (Transform child in missionListContent.transform) { Destroy(child.gameObject); }
         var allMissions = Resources.LoadAll<MissionData>("Missions").ToList();
-        if (allMissions.Count == 0) { return; }
+        if (allMissions.Count == 0) return;
         foreach (var missionData in allMissions)
         {
             GameObject newItem = Instantiate(missionListItemPrefab, missionListContent.transform);
-            var itemUI = newItem.GetComponent<MissionListItemUI>();
-            if (itemUI != null) { itemUI.Setup(missionData, this); }
+            newItem.GetComponent<MissionListItemUI>()?.Setup(missionData, this);
         }
     }
 
     private void PopulateSurvivorSelectionList()
     {
         foreach (Transform child in survivorSelectionContent.transform) { Destroy(child.gameObject); }
-        var idleSurvivors = GameDataManager.Instance.gameData.sanctuarySurvivors.Where(s => s.status == SurvivorStatus.Idle).ToList();
+        var idleSurvivors = GameDataManager.Instance.gameData.sanctuarySurvivors
+            .Where(s => s.status == SurvivorStatus.Idle).ToList();
         foreach (var survivor in idleSurvivors)
         {
             GameObject newItem = Instantiate(survivorSelectionItemPrefab, survivorSelectionContent.transform);
-            var itemUI = newItem.GetComponent<SurvivorSelectionItemUI>();
-            itemUI.Setup(survivor, this);
+            newItem.GetComponent<SurvivorSelectionItemUI>()?.Setup(survivor, this);
         }
     }
 
@@ -256,10 +318,7 @@ public class SurvivorCampUI : MonoBehaviour
         }
         else
         {
-            if (selectedSurvivorsForMission.Contains(survivor))
-            {
-                selectedSurvivorsForMission.Remove(survivor);
-            }
+            selectedSurvivorsForMission.Remove(survivor);
         }
         UpdateSuccessChanceDisplay();
     }
@@ -267,22 +326,24 @@ public class SurvivorCampUI : MonoBehaviour
     private void UpdateSuccessChanceDisplay()
     {
         if (selectedMission == null) return;
+
         float finalChance = selectedMission.baseSuccessChance;
-        if (selectedSurvivorsForMission.Count > 1) { finalChance += (selectedSurvivorsForMission.Count - 1) * selectedMission.bonusSuccessChancePerSurvivor; }
+        if (selectedSurvivorsForMission.Count > 1)
+        {
+            finalChance += (selectedSurvivorsForMission.Count - 1) * selectedMission.bonusSuccessChancePerSurvivor;
+        }
         foreach (var survivor in selectedSurvivorsForMission)
         {
-            foreach (var trait in survivor.traits) { finalChance += trait.successChanceModifier; }
+            foreach (var trait in survivor.traits)
+            {
+                finalChance += trait.successChanceModifier;
+            }
         }
         finalChance = Mathf.Clamp01(finalChance);
+
         missionSuccessChanceText.text = $"Success Chance: <color=yellow>{(finalChance * 100):F0}%</color>";
         startMissionButton.interactable = selectedSurvivorsForMission.Count > 0;
     }
 
-    public void GoToMainMenu() { SceneManager.LoadScene(mainMenuSceneName); }
-    public void OnStartRunClicked() { SceneManager.LoadScene(mainGameSceneName); }
-    public void OnPurchaseDamageClicked() { if (GameDataManager.Instance.TryPurchaseDamageUpgrade()) UpdateUpgradesUI(); }
-    public void OnPurchaseFirstAidKitClicked() { if (GameDataManager.Instance.TryPurchaseFirstAidKitUpgrade()) UpdateUpgradesUI(); }
-    public void OnPurchaseScrapValueClicked() { if (GameDataManager.Instance.TryPurchaseScrapValueUpgrade()) UpdateUpgradesUI(); }
-    public void OnPurchaseStartingSurvivorsClicked() { if (GameDataManager.Instance.TryPurchaseStartingSurvivorsUpgrade()) UpdateUpgradesUI(); }
     #endregion
 }

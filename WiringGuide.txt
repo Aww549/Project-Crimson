@@ -1,0 +1,72 @@
+Jules's Wiring Guide for SurvivorCampUI.cs
+
+This guide provides the exact steps to wire up the new SurvivorCampUI.cs script in the Unity Editor.
+
+---
+Part 1: Initial Component Setup
+---
+
+1.  **Select the Canvas:** In the 'SurvivorCamp' scene, find the main Canvas GameObject that holds all the UI panels.
+2.  **Locate the UI Script Holder:** Find the GameObject that has the old `SurvivorCampUI.cs` script attached. This is likely named 'UIManager' or 'UICanvas'.
+3.  **Replace the Script:**
+    *   Remove the old `SurvivorCampUI` component.
+    *   Add the new `SurvivorCampUI.cs` script as a new component.
+4.  **Assign Canvas Groups:**
+    *   The new script has four public `CanvasGroup` fields. Drag the corresponding GameObjects from your hierarchy onto these slots.
+        *   **Upgrades CG:** Drag the 'UpgradesPanel' GameObject.
+        *   **Sanctuary Main CG:** Drag the 'MainView' panel GameObject (the one with the survivor/mission lists).
+        *   **Sanctuary Details CG:** Drag the 'MissionDetailsPanel' GameObject.
+        *   **Sanctuary Selection CG:** Drag the 'SurvivorSelectionPanel' GameObject.
+5.  **Assign Other UI Elements:**
+    *   Go through the rest of the public fields in the `SurvivorCampUI` component and re-assign all the TextMeshPro elements, buttons, and prefab references just as they were in the old script. The names are identical.
+
+---
+Part 2: Button OnClick() Events
+---
+
+For each button listed below, select it in the Hierarchy, go to the Inspector, and find the `Button` component. Look for the `OnClick()` event panel.
+
+**Main Navigation Buttons:**
+
+1.  **Upgrades Tab Button:**
+    *   Object: The button that should show the Upgrades panel.
+    *   Function: `SurvivorCampUI.ShowUpgradesPanel()`
+2.  **Sanctuary Tab Button:**
+    *   Object: The button that should show the Sanctuary panel.
+    *   Function: `SurvivorCampUI.ShowSanctuaryPanel()`
+3.  **Start Run Button:**
+    *   Object: The button that starts the main game.
+    *   Function: `SurvivorCampUI.OnStartRunClicked()`
+4.  **Main Menu Button:**
+    *   Object: The button that returns to the main menu.
+    *   Function: `SurvivorCampUI.GoToMainMenu()`
+
+**Sanctuary Panel Buttons:**
+
+1.  **Back to Upgrades Button (If one exists):**
+    *   Object: A button inside the Sanctuary that returns to the Upgrades view.
+    *   Function: `SurvivorCampUI.ShowUpgradesPanel()`
+2.  **Back Button (from Mission Details):**
+    *   Object: The 'Back' button on the 'MissionDetailsPanel'.
+    *   Function: `SurvivorCampUI.ReturnToMainSanctuaryView()`
+3.  **Proceed to Selection Button:**
+    *   Object: The button on 'MissionDetailsPanel' to proceed.
+    *   Function: `SurvivorCampUI.OpenSurvivorSelection()`
+4.  **Back Button (from Survivor Selection):**
+    *   Object: The 'Back' button on the 'SurvivorSelectionPanel'.
+    *   Function: `SurvivorCampUI.BackFromSelectionToDetails()`
+5.  **Start Mission Button:**
+    *   Object: The 'StartMissionButton' on the 'SurvivorSelectionPanel'.
+    *   Function: `SurvivorCampUI.OnStartMissionClicked()`
+
+**Upgrade Purchase Buttons:**
+
+*   **Purchase Damage Button:** `SurvivorCampUI.OnPurchaseDamageClicked()`
+*   **Purchase Starting Survivors Button:** `SurvivorCampUI.OnPurchaseStartingSurvivorsClicked()`
+*   **Purchase Scrap Value Button:** `SurvivorCampUI.OnPurchaseScrapValueClicked()`
+*   **Purchase First Aid Kit Button:** `SurvivorCampUI.OnPurchaseFirstAidKitClicked()`
+
+---
+Final Check
+---
+Once all buttons are wired, enter Play Mode in the Unity Editor. Click through every button to ensure all panels appear and disappear correctly without any "frozen snapshot" bugs or console errors. The transitions should be instantaneous and controlled by the script's state machine.
