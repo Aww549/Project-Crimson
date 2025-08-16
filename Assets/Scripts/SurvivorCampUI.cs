@@ -70,20 +70,33 @@ public class SurvivorCampUI : MonoBehaviour
         // Create a list of all CanvasGroups for easy management.
         allPanelCGs = new List<CanvasGroup> { upgradesCG, sanctuaryMainCG, sanctuaryDetailsCG, sanctuarySelectionCG };
 
-        // DEFINITIVE FIX: Ensure all panels are disabled on awake to prevent user interaction
-        // before the GameDataManager is ready and the UI has been initialized.
+        // Start with all panels hidden. They will be enabled in Start() after initialization is complete.
         foreach (var cg in allPanelCGs)
         {
             if (cg != null) SetCanvasGroupState(cg, false);
         }
     }
 
-    // DEFINITIVE FIX: Use a coroutine to wait for the GameDataManager singleton.
+    // DEFINITIVE FIX: Use a coroutine to wait for the GameDataManager, with a timeout.
     private IEnumerator Start()
     {
-        // Wait until the GameDataManager singleton has been initialized.
-        // This is the core fix that prevents all null reference errors.
-        yield return new WaitUntil(() => GameDataManager.Instance != null);
+        // This robust initialization handles two scenarios:
+        // 1. Race Condition: Waits for GameDataManager.Instance to be set if it's slow to initialize.
+        // 2. Missing Manager: If the scene is run standalone, the manager will never be found.
+        //    The timeout prevents an infinite loop and loads the Main Menu to recover.
+
+        float timeout = 0f;
+        while (GameDataManager.Instance == null)
+        {
+            timeout += Time.deltaTime;
+            if (timeout > 5.0f) // 5 second timeout
+            {
+                Debug.LogError("FATAL: GameDataManager.Instance not found after 5 seconds. This scene cannot be run standalone. Returning to Main Menu to ensure proper initialization.");
+                SceneManager.LoadScene(mainMenuSceneName);
+                yield break; // Exit the coroutine and stop this script's execution.
+            }
+            yield return null; // Wait for the next frame
+        }
 
         // Now that the manager is ready, it's safe to proceed with UI setup.
         ChangeState(UIPanel.Upgrades);
@@ -129,8 +142,6 @@ public class SurvivorCampUI : MonoBehaviour
     }
 
     // --- PUBLIC BUTTON FUNCTIONS ---
-    // These are the only functions your buttons should call.
-
     public void ShowUpgradesPanel() => ChangeState(UIPanel.Upgrades);
     public void ShowSanctuaryPanel() => ChangeState(UIPanel.Sanctuary_Main);
 
@@ -138,12 +149,10 @@ public class SurvivorCampUI : MonoBehaviour
     {
         selectedMission = missionData;
         selectedSurvivorsForMission.Clear();
-
         missionNameText.text = missionData.missionName;
         missionDescriptionText.text = missionData.description;
         missionRewardText.text = $"Base Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
         missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
-
         UpdateSuccessChanceDisplay();
         ChangeState(UIPanel.Sanctuary_Details);
     }
@@ -161,10 +170,7 @@ public class SurvivorCampUI : MonoBehaviour
         ChangeState(UIPanel.Sanctuary_Main);
     }
 
-    public void BackFromSelectionToDetails()
-    {
-        ChangeState(UIPanel.Sanctuary_Details);
-    }
+    public void BackFromSelectionToDetails() => ChangeState(UIPanel.Sanctuary_Details);
 
     public void OnStartMissionClicked()
     {
