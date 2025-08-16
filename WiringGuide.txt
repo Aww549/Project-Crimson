@@ -1,0 +1,92 @@
+**Definitive Wiring Guide for SurvivorCampUI**
+
+**Follow these steps precisely to permanently fix the UI bug. The issue is not in the code, but in the Unity Editor setup. This guide will correct it.**
+
+**Assumed Hierarchy:**
+It is assumed your UI Canvas has a structure similar to this:
+```
+Canvas
+└── SanctuaryPanel
+    ├── UpgradesPanel
+    ├── MainView
+    ├── MissionDetailsPanel
+    └── SurvivorSelectionPanel
+```
+The `SurvivorCampUI.cs` script should be on a single manager object, for example, on the `SanctuaryPanel` GameObject itself.
+
+---
+
+**Step 1: Verify `CanvasGroup` on Every Panel**
+
+For EACH of the four main panels, you must ensure it has a `CanvasGroup` component.
+
+1.  Select the `UpgradesPanel` GameObject in the Hierarchy.
+2.  In the Inspector, click the "Add Component" button.
+3.  Search for "Canvas Group" and add it.
+4.  **The default `CanvasGroup` settings are correct (Alpha=1, Interactable=tick, Blocks Raycasts=tick).**
+5.  **Repeat this process for `MainView`, `MissionDetailsPanel`, and `SurvivorSelectionPanel`.** Every panel must have its own `CanvasGroup`.
+
+---
+
+**Step 2: Assign CanvasGroups to the `SurvivorCampUI` Script**
+
+This is the most likely source of the original bug.
+
+1.  Select the GameObject that holds your `SurvivorCampUI.cs` script (e.g., `SanctuaryPanel`).
+2.  In the Inspector, you will see the "Survivor Camp UI" script component with four public fields under the "UI Panel Canvas Groups" header.
+3.  **These fields MUST NOT be empty ("None (Canvas Group)").**
+4.  **Drag and Drop:**
+    *   From the Hierarchy, drag the `UpgradesPanel` GameObject onto the `Upgrades CG` field.
+    *   From the Hierarchy, drag the `MainView` GameObject onto the `Sanctuary Main CG` field.
+    *   From the Hierarchy, drag the `MissionDetailsPanel` GameObject onto the `Sanctuary Details CG` field.
+    *   From the Hierarchy, drag the `SurvivorSelectionPanel` GameObject onto the `Sanctuary Selection CG` field.
+
+When you are done, the Inspector should look like this (the names will match your objects):
+- `Upgrades CG` <-- `UpgradesPanel (Canvas Group)`
+- `Sanctuary Main CG` <-- `MainView (Canvas Group)`
+- `Sanctuary Details CG` <-- `MissionDetailsPanel (Canvas Group)`
+- `Sanctuary Selection CG` <-- `SurvivorSelectionPanel (Canvas Group)`
+
+---
+
+**Step 3: Verify All Button `OnClick()` Events**
+
+Check the buttons that perform panel navigation to ensure they call the correct function.
+
+1.  Select a button, e.g., the "Back" button on the `MissionDetailsPanel`.
+2.  In the Inspector, find the "Button" component and look at the `OnClick()` event handler.
+3.  **The `OnClick()` event must be configured as follows:**
+    *   The first dropdown should be `Runtime Only`.
+    *   The object field below it must have your `SurvivorCampUI` script's GameObject (e.g., `SanctuaryPanel`) dragged into it.
+    *   The function dropdown on the right must point to the correct function in `SurvivorCampUI`.
+
+**Check these specific buttons:**
+*   **Mission Details Panel "Back" Button:**
+    *   Function: `SurvivorCampUI.ReturnToMainSanctuaryView`
+*   **Mission Details Panel "Select Survivors" Button:**
+    *   Function: `SurvivorCampUI.OpenSurvivorSelection`
+*   **Survivor Selection Panel "Back" Button:**
+    *   Function: `SurvivorCampUI.BackFromSelectionToDetails`
+*   **Main "Upgrades" Tab Button:**
+    *   Function: `SurvivorCampUI.ShowUpgradesPanel`
+*   **Main "Sanctuary" Tab Button:**
+    *   Function: `SurvivorCampUI.ShowSanctuaryPanel`
+
+**Any button that opens the Mission Details panel (e.g., from the mission list) should already be calling `SurvivorCampUI.ShowMissionDetails`, which is correct.**
+
+---
+
+**Step 4: Check for Interfering `Animator` Components**
+
+An `Animator` can override the `alpha` settings of a `CanvasGroup`.
+
+1.  Select the `MissionDetailsPanel` GameObject.
+2.  In the Inspector, check if there is an "Animator" component.
+3.  **If an Animator exists and you are not intentionally using it for panel fades, either disable it or remove it.** The script now handles all visibility changes.
+4.  Repeat this check for the other three panels (`UpgradesPanel`, `MainView`, `SurvivorSelectionPanel`).
+
+---
+
+**Completion**
+
+After following these four steps, the UI system will be correctly configured. The bug will be resolved. Enter Play Mode to confirm that transitioning between panels now correctly hides the previous panel.

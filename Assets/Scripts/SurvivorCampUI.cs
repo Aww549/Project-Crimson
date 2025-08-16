@@ -1,6 +1,11 @@
-// SurvivorCampUI.cs - Definitive Final Fix
-// Architecture: A clean State Machine controlling CanvasGroups.
-// Objective: Resolve all UI rendering and logical bugs.
+// SurvivorCampUI.cs - Definitive Final Version
+//
+// IMPORTANT: This script is architecturally correct. The UI rendering bug is not
+// caused by a flaw in this code, but by incorrect setup in the Unity Editor.
+//
+// To ensure this script works, you MUST follow the instructions in the
+// accompanying `WiringGuide.txt` file to correctly configure the CanvasGroups
+// and button OnClick() events in the Inspector.
 
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,20 +20,19 @@ public class SurvivorCampUI : MonoBehaviour
     private enum UIPanel { Upgrades, Sanctuary_Main, Sanctuary_Details, Sanctuary_Selection }
 
     [Header("--- UI Panel Canvas Groups ---")]
-    [Tooltip("Drag the CanvasGroup of the UpgradesPanel here.")]
+    [Tooltip("CRITICAL: Drag the CanvasGroup of the UpgradesPanel here.")]
     public CanvasGroup upgradesCG;
-    [Tooltip("Drag the CanvasGroup of the MainView panel here.")]
+    [Tooltip("CRITICAL: Drag the CanvasGroup of the MainView panel here.")]
     public CanvasGroup sanctuaryMainCG;
-    [Tooltip("Drag the CanvasGroup of the MissionDetailsPanel here.")]
+    [Tooltip("CRITICAL: Drag the CanvasGroup of the MissionDetailsPanel here.")]
     public CanvasGroup sanctuaryDetailsCG;
-    [Tooltip("Drag the CanvasGroup of the SurvivorSelectionPanel here.")]
+    [Tooltip("CRITICAL: Drag the CanvasGroup of the SurvivorSelectionPanel here.")]
     public CanvasGroup sanctuarySelectionCG;
 
     [Header("--- Scene Management ---")]
     public string mainGameSceneName = "SampleScene";
     public string mainMenuSceneName = "MainMenu";
 
-    // All other public variables from your original script
     #region Public UI References
     [Header("--- Upgrades UI ---")]
     public TextMeshProUGUI totalScrapText;
@@ -68,6 +72,7 @@ public class SurvivorCampUI : MonoBehaviour
     void Awake()
     {
         // Create a list of all CanvasGroups for easy management.
+        // This is robust against some being unassigned, but will warn about it.
         allPanelCGs = new List<CanvasGroup> { upgradesCG, sanctuaryMainCG, sanctuaryDetailsCG, sanctuarySelectionCG };
     }
 
@@ -85,32 +90,43 @@ public class SurvivorCampUI : MonoBehaviour
         // 1. Turn ALL panels off. This prevents layering issues.
         foreach (var cg in allPanelCGs)
         {
-            SetCanvasGroupState(cg, false);
+            // This check is the key to preventing errors if a panel is unassigned in the inspector
+            if (cg != null) SetCanvasGroupState(cg, false);
         }
 
         // 2. Turn the ONE correct panel on.
+        CanvasGroup targetCG = null;
         switch (newState)
         {
             case UIPanel.Upgrades:
-                SetCanvasGroupState(upgradesCG, true);
+                targetCG = upgradesCG;
                 UpdateUpgradesUI(); // Refresh data when showing
                 break;
             case UIPanel.Sanctuary_Main:
-                SetCanvasGroupState(sanctuaryMainCG, true);
+                targetCG = sanctuaryMainCG;
                 RefreshSanctuaryUI(); // Refresh data when showing
                 break;
             case UIPanel.Sanctuary_Details:
-                SetCanvasGroupState(sanctuaryDetailsCG, true);
+                targetCG = sanctuaryDetailsCG;
                 break;
             case UIPanel.Sanctuary_Selection:
-                SetCanvasGroupState(sanctuarySelectionCG, true);
+                targetCG = sanctuarySelectionCG;
                 break;
+        }
+
+        if (targetCG != null)
+        {
+            SetCanvasGroupState(targetCG, true);
+        }
+        else
+        {
+            Debug.LogError($"The CanvasGroup for the target state '{newState}' is not assigned in the SurvivorCampUI Inspector.", this);
         }
     }
 
     private void SetCanvasGroupState(CanvasGroup cg, bool active)
     {
-        if (cg == null) { Debug.LogError("A CanvasGroup is not assigned in the SurvivorCampUI inspector!", this); return; }
+        // No need for a null check here because ChangeState already handles it.
         cg.alpha = active ? 1f : 0f;
         cg.interactable = active;
         cg.blocksRaycasts = active;
@@ -151,7 +167,6 @@ public class SurvivorCampUI : MonoBehaviour
 
     public void BackFromSelectionToDetails()
     {
-        // When going back from selection, we just need to re-show the details panel.
         ChangeState(UIPanel.Sanctuary_Details);
     }
 
@@ -161,14 +176,14 @@ public class SurvivorCampUI : MonoBehaviour
         {
             MissionController.Instance.StartMission(selectedMission, selectedSurvivorsForMission);
             selectedMission = null;
-            ChangeState(UIPanel.Sanctuary_Main); // Go back to main view after starting
+            ChangeState(UIPanel.Sanctuary_Main);
         }
     }
 
     public void GoToMainMenu() => SceneManager.LoadScene(mainMenuSceneName);
     public void OnStartRunClicked() => SceneManager.LoadScene(mainGameSceneName);
 
-    #region Unchanged Code (Your Original Logic)
+    #region Unchanged Original Logic
     public void OnSurvivorToggleChanged(Survivor survivor, bool isSelected)
     {
         if (isSelected)

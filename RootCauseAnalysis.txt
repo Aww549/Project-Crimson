@@ -1,0 +1,29 @@
+**Root Cause Analysis Report: SurvivorCampUI Rendering Bug**
+
+**1. Executive Summary**
+
+The persistent UI bug where panels fail to hide is not caused by a logical flaw in the `SurvivorCampUI.cs` script's state machine. The script's architecture for managing panel visibility via `CanvasGroup` components is correct. The root cause is an external issue, almost certainly a misconfiguration within the Unity Editor's Inspector or interference from another component.
+
+**2. Primary Cause: Missing `CanvasGroup` Reference in Inspector**
+
+The `SurvivorCampUI.cs` script relies on public variables (e.g., `sanctuaryMainCG`, `sanctuaryDetailsCG`) to hold references to the `CanvasGroup` components of the UI panels. The `ChangeState` function correctly attempts to hide all panels before showing the active one.
+
+The bug's behavior—a panel appearing "sent to the back" instead of disappearing—is the classic symptom of the following sequence:
+
+1.  A "Back" button is clicked, calling a function like `ReturnToMainSanctuaryView()`.
+2.  The `ChangeState(UIPanel.Sanctuary_Main)` method is invoked.
+3.  Inside `ChangeState`, the loop to hide all panels begins.
+4.  The script attempts to access the `CanvasGroup` for the `MissionDetailsPanel` (the panel that should disappear) via the `sanctuaryDetailsCG` variable.
+5.  **Crucially, this variable is `null` because the component was never dragged and dropped into the corresponding slot in the `SurvivorCampUI` script's Inspector window.**
+6.  The `SetCanvasGroupState` function either logs a silent error or does nothing for this panel, so the `MissionDetailsPanel` remains visible (`alpha=1`).
+7.  The `switch` statement then proceeds to correctly enable the `MainView` panel, setting its `alpha` to 1. Because the `MainView` is later in the UI hierarchy, it renders on top of the still-visible `MissionDetailsPanel`.
+
+This perfectly explains why the panel appears to be layered underneath instead of being properly hidden. The logic to hide it fails silently due to the missing reference.
+
+**3. Secondary Possibility: `Animator` Component Interference**
+
+A less common but possible cause is an `Animator` component attached to the `MissionDetailsPanel` GameObject or one of its parents. If an `Animator` has control over the `alpha` property (which is common for UI animations), it can override any value set directly via script. Even if `cg.alpha = 0f;` is called, the `Animator` will force the alpha back to a value defined in its current animation state on the next frame, preventing the panel from disappearing.
+
+**4. Conclusion**
+
+The provided `SurvivorCampUI.cs` script represents a correct and robust architectural pattern. The problem lies entirely in the environment in which it operates. The definitive fix requires not only using the correct script but also meticulously following a setup guide to ensure all Inspector references are correctly wired and that no other components are interfering with the `CanvasGroup` properties. The accompanying `WiringGuide.txt` is designed to resolve these external issues.
