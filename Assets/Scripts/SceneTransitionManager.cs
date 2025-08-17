@@ -22,8 +22,8 @@ public class SceneTransitionManager : MonoBehaviour
         }
     }
 
-    public const string CAMP_SCENE = "CampScene";
-    public const string MISSIONS_SCENE = "MissionsScene";
+    public const string CAMP_SCENE = "SurvivorCamp";
+    public const string MISSIONS_SCENE = "MissionUI";
 
     void Awake()
     {

@@ -28,6 +28,8 @@ public class SurvivorCampUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI missionNameText;
     [SerializeField] private TextMeshProUGUI missionDescriptionText;
     [SerializeField] private TextMeshProUGUI missionRewardsText;
+    [SerializeField] private TextMeshProUGUI missionDurationText;
+    [SerializeField] private TextMeshProUGUI missionSuccessChanceText;
     [SerializeField] private Button startMissionButton;
 
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
@@ -44,14 +46,14 @@ public class SurvivorCampUI : MonoBehaviour
 
     private void SetupButtonListeners()
     {
-        backToCampButton.onClick.AddListener(OnBackToCamp);
-        backToMissionListButton.onClick.AddListener(ShowSanctuaryPanel);
-        backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
-        startMissionButton.onClick.AddListener(OnStartMission);
+        if (backToCampButton != null) backToCampButton.onClick.AddListener(OnBackToCamp);
+        if (backToMissionListButton != null) backToMissionListButton.onClick.AddListener(ShowSanctuaryPanel);
+        if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
+        if (startMissionButton != null) startMissionButton.onClick.AddListener(OnStartMission);
         if (confirmMissionButton != null) confirmMissionButton.onClick.AddListener(OnConfirmMission);
     }
 
-    private void OnConfirmMission()
+    public void OnConfirmMission()
     {
         if (currentMission != null && selectedSurvivors.Count > 0)
         {
@@ -62,7 +64,7 @@ public class SurvivorCampUI : MonoBehaviour
         }
     }
 
-    private void OnBackToCamp()
+    public void OnBackToCamp()
     {
         SceneTransitionManager.Instance.LoadCampScene();
     }
@@ -149,12 +151,14 @@ public class SurvivorCampUI : MonoBehaviour
             currentMission = missionData;
             missionNameText.text = missionData.missionName;
             missionDescriptionText.text = missionData.description;
-            missionRewardsText.text = $"Rewards: {missionData.baseRewardAmount} {missionData.rewardType}";
+            missionRewardsText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
+            missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
+            missionSuccessChanceText.text = $"Base Success: {missionData.baseSuccessChance * 100}%";
             ShowMissionDetailsPanel();
         }
     }
 
-    private void OnStartMission()
+    public void OnStartMission()
     {
         ShowSurvivorSelectionPanel();
         RefreshSurvivorList();

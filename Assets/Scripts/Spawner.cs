@@ -117,6 +117,20 @@ public class Spawner : MonoBehaviour
 
     void SpawnLootWave()
     {
+        if (GameDataManager.Instance == null)
+        {
+            Debug.LogError("GameDataManager instance not found in SpawnLootWave. Spawning only scrap.");
+            for (int i = 0; i < 3; i++)
+            {
+                int randomLane = Random.Range(0, 2);
+                float xPos = (randomLane - 0.5f) * laneDistance;
+                float zPos = nextSpawnZ + (i * (zombieSpacing / 2));
+                Vector3 spawnPos = new Vector3(xPos, 0.5f, zPos);
+                Instantiate(scrapPrefab, spawnPos, Quaternion.identity);
+            }
+            return;
+        }
+
         int scrapToSpawn = 3;
 
         // DEFINITIVE FIX: We now check our internal flag instead of the GameDataManager.

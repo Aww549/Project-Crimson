@@ -5,80 +5,59 @@ using TMPro;
 
 public class CampUI : MonoBehaviour
 {
-    [Header("Panels")]
-    [SerializeField] private GameObject mainPanel;
-
-    [Header("Main Panel Buttons")]
+    [Header("Navigation Buttons")]
     [SerializeField] private Button missionsButton;
     [SerializeField] private Button exitToMainMenuButton;
 
-    [Header("Building Upgrade Buttons")]
-    [SerializeField] private Button armoryUpgradeButton;
-    [SerializeField] private Button hospitalUpgradeButton;
-    [SerializeField] private Button workshopUpgradeButton;
-    [SerializeField] private Button townHallUpgradeButton;
+    [Header("Upgrade Buttons")]
+    [SerializeField] private Button combatTrainingButton; // Corresponds to damageUpgradeLevel
+    [SerializeField] private Button firstAidKitButton;    // Corresponds to firstAidKitLevel
+    [SerializeField] private Button scrapScavengingButton; // Corresponds to scrapValueUpgradeLevel
+    [SerializeField] private Button fortifyAmmoButton;     // Corresponds to startingSurvivorsUpgradeLevel
 
     [Header("Currency Display")]
     [SerializeField] private TextMeshProUGUI scrapText;
     [SerializeField] private TextMeshProUGUI materialsText;
 
     [Header("Level Display")]
-    [SerializeField] private TextMeshProUGUI armoryLevelText;
-    [SerializeField] private TextMeshProUGUI hospitalLevelText;
-    [SerializeField] private TextMeshProUGUI workshopLevelText;
-    [SerializeField] private TextMeshProUGUI townHallLevelText;
+    [SerializeField] private TextMeshProUGUI combatTrainingLevelText;
+    [SerializeField] private TextMeshProUGUI firstAidKitLevelText;
+    [SerializeField] private TextMeshProUGUI scrapScavengingLevelText;
+    [SerializeField] private TextMeshProUGUI fortifyAmmoLevelText;
 
     private void Start()
     {
         SetupButtonListeners();
-        UpdateCurrencyDisplay();
-        UpdateUpgradeLevelsDisplay();
-        ShowMainPanel();
+        UpdateAllDisplays();
     }
 
     private void SetupButtonListeners()
     {
-        // Main panel buttons
-        missionsButton.onClick.AddListener(OnMissionsButtonClick);
-        exitToMainMenuButton.onClick.AddListener(OnExitToMainMenu);
+        // Navigation
+        if (missionsButton != null) missionsButton.onClick.AddListener(OnMissionsButtonClick);
+        if (exitToMainMenuButton != null) exitToMainMenuButton.onClick.AddListener(OnExitToMainMenu);
 
-        // Building upgrade buttons
-        armoryUpgradeButton.onClick.AddListener(() => OnBuildingUpgrade("Armory"));
-        hospitalUpgradeButton.onClick.AddListener(() => OnBuildingUpgrade("Hospital"));
-        workshopUpgradeButton.onClick.AddListener(() => OnBuildingUpgrade("Workshop"));
-        townHallUpgradeButton.onClick.AddListener(() => OnBuildingUpgrade("TownHall"));
+        // Upgrades
+        if (combatTrainingButton != null) combatTrainingButton.onClick.AddListener(OnPurchaseCombatTraining);
+        if (firstAidKitButton != null) firstAidKitButton.onClick.AddListener(OnPurchaseFirstAidKit);
+        if (scrapScavengingButton != null) scrapScavengingButton.onClick.AddListener(OnPurchaseScrapScavenging);
+        if (fortifyAmmoButton != null) fortifyAmmoButton.onClick.AddListener(OnPurchaseFortifyAmmo);
     }
 
-    private void OnMissionsButtonClick()
+    private void UpdateAllDisplays()
     {
-        SceneTransitionManager.Instance.LoadMissionsScene();
-    }
-
-    private void ShowMainPanel()
-    {
-        mainPanel.SetActive(true);
+        UpdateCurrencyDisplay();
+        UpdateUpgradeLevelsDisplay();
     }
 
     private void UpdateUpgradeLevelsDisplay()
     {
         if (GameDataManager.Instance == null) return;
 
-        armoryLevelText.text = $"Level {GameDataManager.Instance.gameData.armoryLevel}";
-        hospitalLevelText.text = $"Level {GameDataManager.Instance.gameData.hospitalLevel}";
-        workshopLevelText.text = $"Level {GameDataManager.Instance.gameData.workshopLevel}";
-        // Assuming town hall doesn't have a level in GameData, or add it if it does
-        // townHallLevelText.text = $"Level {GameDataManager.Instance.gameData.townHallLevel}";
-    }
-
-    private void OnBuildingUpgrade(string buildingName)
-    {
-        // Implementation for building upgrades
-        if (GameDataManager.Instance != null)
-        {
-            // Add your upgrade logic here
-            UpdateCurrencyDisplay();
-            UpdateUpgradeLevelsDisplay();
-        }
+        combatTrainingLevelText.text = $"Level {GameDataManager.Instance.gameData.damageUpgradeLevel}";
+        firstAidKitLevelText.text = $"Level {GameDataManager.Instance.gameData.firstAidKitLevel}";
+        scrapScavengingLevelText.text = $"Level {GameDataManager.Instance.gameData.scrapValueUpgradeLevel}";
+        fortifyAmmoLevelText.text = $"Level {GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel}";
     }
 
     private void UpdateCurrencyDisplay()
@@ -90,20 +69,91 @@ public class CampUI : MonoBehaviour
         }
     }
 
-    private void OnExitToMainMenu()
+    // --- Public Button Handlers ---
+
+    public void OnMissionsButtonClick()
     {
-        // Implement your main menu loading logic here
+        SceneTransitionManager.Instance.LoadMissionsScene();
+    }
+
+    public void OnExitToMainMenu()
+    {
         SceneManager.LoadScene("MainMenu");
     }
+
+    public void OnPurchaseCombatTraining()
+    {
+        if (GameDataManager.Instance != null)
+        {
+            if (GameDataManager.Instance.TryPurchaseDamageUpgrade())
+            {
+                Debug.Log("Purchased Combat Training Upgrade!");
+                UpdateAllDisplays();
+            }
+            else
+            {
+                Debug.Log("Not enough scrap for Combat Training Upgrade.");
+            }
+        }
+    }
+
+    public void OnPurchaseFirstAidKit()
+    {
+        if (GameDataManager.Instance != null)
+        {
+            if (GameDataManager.Instance.TryPurchaseFirstAidKitUpgrade())
+            {
+                Debug.Log("Purchased First Aid Kit Upgrade!");
+                UpdateAllDisplays();
+            }
+            else
+            {
+                Debug.Log("Not enough scrap for First Aid Kit Upgrade.");
+            }
+        }
+    }
+
+    public void OnPurchaseScrapScavenging()
+    {
+        if (GameDataManager.Instance != null)
+        {
+            if (GameDataManager.Instance.TryPurchaseScrapValueUpgrade())
+            {
+                Debug.Log("Purchased Scrap Scavenging Upgrade!");
+                UpdateAllDisplays();
+            }
+            else
+            {
+                Debug.Log("Not enough scrap for Scrap Scavenging Upgrade.");
+            }
+        }
+    }
+
+    public void OnPurchaseFortifyAmmo()
+    {
+        if (GameDataManager.Instance != null)
+        {
+            if (GameDataManager.Instance.TryPurchaseStartingSurvivorsUpgrade())
+            {
+                Debug.Log("Purchased Fortify Ammo (Starting Survivors) Upgrade!");
+                UpdateAllDisplays();
+            }
+            else
+            {
+                Debug.Log("Not enough scrap for Fortify Ammo (Starting Survivors) Upgrade.");
+            }
+        }
+    }
+
 
     private void OnDestroy()
     {
         // Clean up listeners
         if (missionsButton != null) missionsButton.onClick.RemoveAllListeners();
         if (exitToMainMenuButton != null) exitToMainMenuButton.onClick.RemoveAllListeners();
-        if (armoryUpgradeButton != null) armoryUpgradeButton.onClick.RemoveAllListeners();
-        if (hospitalUpgradeButton != null) hospitalUpgradeButton.onClick.RemoveAllListeners();
-        if (workshopUpgradeButton != null) workshopUpgradeButton.onClick.RemoveAllListeners();
-        if (townHallUpgradeButton != null) townHallUpgradeButton.onClick.RemoveAllListeners();
+        if (combatTrainingButton != null) combatTrainingButton.onClick.RemoveAllListeners();
+        if (firstAidKitButton != null) firstAidKitButton.onClick.RemoveAllListeners();
+        if (scrapScavengingButton != null) scrapScavengingButton.onClick.RemoveAllListeners();
+        if (fortifyAmmoButton != null) fortifyAmmoButton.onClick.RemoveAllListeners();
     }
 }
