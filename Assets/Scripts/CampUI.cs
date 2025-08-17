@@ -3,35 +3,43 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 
+// This script has been rewritten to match the scene hierarchy provided by the user.
+// The variable names for buttons and text fields should now directly correspond
+// to the names of the GameObjects in the scene, making them easy to assign.
 public class CampUI : MonoBehaviour
 {
-    [Header("Navigation Buttons")]
-    [SerializeField] private Button missionsButton;
-    [SerializeField] private Button exitToMainMenuButton;
+    // === HIERARCHY: Main Panel ===
+    [Header("Main Panel")]
+    [SerializeField] private Button MissionsButton;
+    [SerializeField] private Button BackButton; // Assuming this is the exit button
+    [SerializeField] private TextMeshProUGUI TotalScrap_Text;
 
-    [Header("Upgrade Buttons")]
-    [SerializeField] private Button combatTrainingButton; // Corresponds to damageUpgradeLevel
-    [SerializeField] private Button firstAidKitButton;    // Corresponds to firstAidKitLevel
-    [SerializeField] private Button scrapScavengingButton; // Corresponds to scrapValueUpgradeLevel
-    [SerializeField] private Button fortifyAmmoButton;     // Corresponds to startingSurvivorsUpgradeLevel
+    // === HIERARCHY: Upgrades Panel -> DamageUpgrade_Row ===
+    [Header("Damage Upgrade")]
+    [SerializeField] private TextMeshProUGUI DamageLevel_Text;
+    [SerializeField] private Button BuyDamage_Button;
+    [SerializeField] private TextMeshProUGUI DamageCost_Text;
 
-    [Header("Currency Display")]
-    [SerializeField] private TextMeshProUGUI scrapText;
-    [SerializeField] private TextMeshProUGUI materialsText;
+    // === HIERARCHY: Upgrades Panel -> StartingSurvivorsUpgrade_Row ===
+    [Header("Starting Survivors Upgrade")]
+    [SerializeField] private TextMeshProUGUI StartingSurvivorsLevel_Text;
+    [SerializeField] private Button BuyStartingSurvivors_Button;
+    [SerializeField] private TextMeshProUGUI StartingSurvivorsCost_Text;
 
-    [Header("Level Display")]
-    [SerializeField] private TextMeshProUGUI combatTrainingLevelText;
-    [SerializeField] private TextMeshProUGUI firstAidKitLevelText;
-    [SerializeField] private TextMeshProUGUI scrapScavengingLevelText;
-    [SerializeField] private TextMeshProUGUI fortifyAmmoLevelText;
+    // === HIERARCHY: Upgrades Panel -> ScrapValueUpgrade_Row ===
+    [Header("Scrap Value Upgrade")]
+    [SerializeField] private TextMeshProUGUI ScrapValueLevel_Text;
+    [SerializeField] private Button BuyScrapValue_Button;
+    [SerializeField] private TextMeshProUGUI ScrapValueCost_Text;
 
-    [Header("Cost Display")]
-    [SerializeField] private TextMeshProUGUI combatTrainingCostText;
-    [SerializeField] private TextMeshProUGUI firstAidKitCostText;
-    [SerializeField] private TextMeshProUGUI scrapScavengingCostText;
-    [SerializeField] private TextMeshProUGUI fortifyAmmoCostText;
+    // === HIERARCHY: Upgrades Panel -> FirstAidKit_Row ===
+    [Header("First Aid Kit Upgrade")]
+    [SerializeField] private TextMeshProUGUI FirstAidKitLevel_Text;
+    [SerializeField] private Button BuyFirstAidKit_Button;
+    [SerializeField] private TextMeshProUGUI FirstAidKitCost_Text;
 
-    private void Start()
+
+    void Start()
     {
         SetupButtonListeners();
         UpdateAllDisplays();
@@ -40,66 +48,48 @@ public class CampUI : MonoBehaviour
     private void SetupButtonListeners()
     {
         // Navigation
-        if (missionsButton != null) missionsButton.onClick.AddListener(OnMissionsButtonClick);
-        if (exitToMainMenuButton != null) exitToMainMenuButton.onClick.AddListener(OnExitToMainMenu);
+        if (MissionsButton != null) MissionsButton.onClick.AddListener(OnMissionsButtonClick);
+        if (BackButton != null) BackButton.onClick.AddListener(OnExitToMainMenu);
 
         // Upgrades
-        if (combatTrainingButton != null) combatTrainingButton.onClick.AddListener(OnPurchaseCombatTraining);
-        if (firstAidKitButton != null) firstAidKitButton.onClick.AddListener(OnPurchaseFirstAidKit);
-        if (scrapScavengingButton != null) scrapScavengingButton.onClick.AddListener(OnPurchaseScrapScavenging);
-        if (fortifyAmmoButton != null) fortifyAmmoButton.onClick.AddListener(OnPurchaseFortifyAmmo);
+        if (BuyDamage_Button != null) BuyDamage_Button.onClick.AddListener(OnPurchaseCombatTraining);
+        if (BuyFirstAidKit_Button != null) BuyFirstAidKit_Button.onClick.AddListener(OnPurchaseFirstAidKit);
+        if (BuyScrapValue_Button != null) BuyScrapValue_Button.onClick.AddListener(OnPurchaseScrapScavenging);
+        if (BuyStartingSurvivors_Button != null) BuyStartingSurvivors_Button.onClick.AddListener(OnPurchaseStartingSurvivors);
     }
 
     private void UpdateAllDisplays()
     {
         UpdateCurrencyDisplay();
-        UpdateUpgradeLevelsDisplay();
-        UpdateUpgradeCostsDisplay();
+        UpdateUpgradeLevelsAndCosts();
     }
 
-    private void UpdateUpgradeCostsDisplay()
-    {
-        if (GameDataManager.Instance == null)
-        {
-            Debug.LogError("GameDataManager is null. Cannot update costs.");
-            return;
-        }
-
-        Debug.Log("Updating upgrade costs...");
-
-        int combatCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel);
-        if (combatTrainingCostText != null) combatTrainingCostText.text = $"Cost: {combatCost}";
-        Debug.Log($"Combat Training Cost Calculated: {combatCost}");
-
-        int shieldCost = GameDataManager.Instance.GetShieldUpgradeCost();
-        if (firstAidKitCostText != null) firstAidKitCostText.text = $"Cost: {shieldCost}";
-        Debug.Log($"First Aid Kit Cost Calculated: {shieldCost} (Level: {GameDataManager.Instance.gameData.firstAidKitLevel})");
-
-        int scrapCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel);
-        if (scrapScavengingCostText != null) scrapScavengingCostText.text = $"Cost: {scrapCost}";
-        Debug.Log($"Scrap Scavenging Cost Calculated: {scrapCost}");
-
-        int ammoCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel);
-        if (fortifyAmmoCostText != null) fortifyAmmoCostText.text = $"Cost: {ammoCost}";
-        Debug.Log($"Fortify Ammo Cost Calculated: {ammoCost}");
-    }
-
-    private void UpdateUpgradeLevelsDisplay()
+    private void UpdateUpgradeLevelsAndCosts()
     {
         if (GameDataManager.Instance == null) return;
 
-        if (combatTrainingLevelText != null) combatTrainingLevelText.text = $"Level {GameDataManager.Instance.gameData.damageUpgradeLevel}";
-        if (firstAidKitLevelText != null) firstAidKitLevelText.text = $"Level {GameDataManager.Instance.gameData.firstAidKitLevel}";
-        if (scrapScavengingLevelText != null) scrapScavengingLevelText.text = $"Level {GameDataManager.Instance.gameData.scrapValueUpgradeLevel}";
-        if (fortifyAmmoLevelText != null) fortifyAmmoLevelText.text = $"Level {GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel}";
+        // Damage / Combat Training
+        if (DamageLevel_Text != null) DamageLevel_Text.text = $"Level {GameDataManager.Instance.gameData.damageUpgradeLevel}";
+        if (DamageCost_Text != null) DamageCost_Text.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel)}";
+
+        // First Aid Kit
+        if (FirstAidKitLevel_Text != null) FirstAidKitLevel_Text.text = $"Level {GameDataManager.Instance.gameData.firstAidKitLevel}";
+        if (FirstAidKitCost_Text != null) FirstAidKitCost_Text.text = $"Cost: {GameDataManager.Instance.GetShieldUpgradeCost()}";
+
+        // Scrap Scavenging
+        if (ScrapValueLevel_Text != null) ScrapValueLevel_Text.text = $"Level {GameDataManager.Instance.gameData.scrapValueUpgradeLevel}";
+        if (ScrapValueCost_Text != null) ScrapValueCost_Text.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel)}";
+
+        // Starting Survivors / Fortify Ammo
+        if (StartingSurvivorsLevel_Text != null) StartingSurvivorsLevel_Text.text = $"Level {GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel}";
+        if (StartingSurvivorsCost_Text != null) StartingSurvivorsCost_Text.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel)}";
     }
 
     private void UpdateCurrencyDisplay()
     {
-        if (GameDataManager.Instance != null)
+        if (GameDataManager.Instance != null && TotalScrap_Text != null)
         {
-            scrapText.text = $"Scrap: {GameDataManager.Instance.gameData.totalScrap}";
-            materialsText.text = $"Materials: {GameDataManager.Instance.gameData.materials}";
+            TotalScrap_Text.text = $"Scrap: {GameDataManager.Instance.gameData.totalScrap}";
         }
     }
 
@@ -117,77 +107,44 @@ public class CampUI : MonoBehaviour
 
     public void OnPurchaseCombatTraining()
     {
-        if (GameDataManager.Instance != null)
+        if (GameDataManager.Instance != null && GameDataManager.Instance.TryPurchaseDamageUpgrade())
         {
-            if (GameDataManager.Instance.TryPurchaseDamageUpgrade())
-            {
-                Debug.Log("Purchased Combat Training Upgrade!");
-                UpdateAllDisplays();
-            }
-            else
-            {
-                Debug.Log("Not enough scrap for Combat Training Upgrade.");
-            }
+            UpdateAllDisplays();
         }
     }
 
     public void OnPurchaseFirstAidKit()
     {
-        if (GameDataManager.Instance != null)
+        if (GameDataManager.Instance != null && GameDataManager.Instance.TryPurchaseFirstAidKitUpgrade())
         {
-            if (GameDataManager.Instance.TryPurchaseFirstAidKitUpgrade())
-            {
-                Debug.Log("Purchased First Aid Kit Upgrade!");
-                UpdateAllDisplays();
-            }
-            else
-            {
-                Debug.Log("Not enough scrap for First Aid Kit Upgrade.");
-            }
+            UpdateAllDisplays();
         }
     }
 
     public void OnPurchaseScrapScavenging()
     {
-        if (GameDataManager.Instance != null)
+        if (GameDataManager.Instance != null && GameDataManager.Instance.TryPurchaseScrapValueUpgrade())
         {
-            if (GameDataManager.Instance.TryPurchaseScrapValueUpgrade())
-            {
-                Debug.Log("Purchased Scrap Scavenging Upgrade!");
-                UpdateAllDisplays();
-            }
-            else
-            {
-                Debug.Log("Not enough scrap for Scrap Scavenging Upgrade.");
-            }
+            UpdateAllDisplays();
         }
     }
 
-    public void OnPurchaseFortifyAmmo()
+    public void OnPurchaseStartingSurvivors()
     {
-        if (GameDataManager.Instance != null)
+        if (GameDataManager.Instance != null && GameDataManager.Instance.TryPurchaseStartingSurvivorsUpgrade())
         {
-            if (GameDataManager.Instance.TryPurchaseStartingSurvivorsUpgrade())
-            {
-                Debug.Log("Purchased Fortify Ammo (Starting Survivors) Upgrade!");
-                UpdateAllDisplays();
-            }
-            else
-            {
-                Debug.Log("Not enough scrap for Fortify Ammo (Starting Survivors) Upgrade.");
-            }
+            UpdateAllDisplays();
         }
     }
-
 
     private void OnDestroy()
     {
         // Clean up listeners
-        if (missionsButton != null) missionsButton.onClick.RemoveAllListeners();
-        if (exitToMainMenuButton != null) exitToMainMenuButton.onClick.RemoveAllListeners();
-        if (combatTrainingButton != null) combatTrainingButton.onClick.RemoveAllListeners();
-        if (firstAidKitButton != null) firstAidKitButton.onClick.RemoveAllListeners();
-        if (scrapScavengingButton != null) scrapScavengingButton.onClick.RemoveAllListeners();
-        if (fortifyAmmoButton != null) fortifyAmmoButton.onClick.RemoveAllListeners();
+        if (MissionsButton != null) MissionsButton.onClick.RemoveAllListeners();
+        if (BackButton != null) BackButton.onClick.RemoveAllListeners();
+        if (BuyDamage_Button != null) BuyDamage_Button.onClick.RemoveAllListeners();
+        if (BuyFirstAidKit_Button != null) BuyFirstAidKit_Button.onClick.RemoveAllListeners();
+        if (BuyScrapValue_Button != null) BuyScrapValue_Button.onClick.RemoveAllListeners();
+        if (BuyStartingSurvivors_Button != null) BuyStartingSurvivors_Button.onClick.RemoveAllListeners();
     }
 }

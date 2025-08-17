@@ -3,234 +3,226 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
 
+// This script has been rewritten from scratch to match the scene hierarchy provided by the user.
+// The variable names should now directly correspond to the names of the GameObjects
+// in the scene, making them easy to assign in the Inspector.
 public class SurvivorCampUI : MonoBehaviour
 {
     [Header("Panels")]
-    [SerializeField] private GameObject sanctuaryPanel;
-    [SerializeField] private GameObject missionDetailsPanel;
-    [SerializeField] private GameObject survivorSelectionPanel;
+    [SerializeField] private GameObject SanctuaryMainPanel;
+    [SerializeField] private GameObject MissionDetailsPanel;
+    [SerializeField] private GameObject SurvivorSelectionPanel;
 
-    [Header("Navigation Buttons")]
-    [SerializeField] private Button backToCampButton;
-    [SerializeField] private Button backToMissionListButton;
-    [SerializeField] private Button backToMissionDetailsButton;
-    [SerializeField] private Button startMissionButton; // This is on the survivor selection panel
+    [Header("Main Navigation Buttons")]
+    [SerializeField] private Button BackToUpgradesButton;
 
-    [Header("List Content")]
-    [SerializeField] private Transform missionListContent;
-    [SerializeField] private Transform survivorSelectionContent;
-    [SerializeField] private Transform sanctuarySurvivorListContent;
+    [Header("Mission Detail Buttons")]
+    [SerializeField] private Button SelectSurvivors_Button;
+    [SerializeField] private Button Close_Button;
+
+    [Header("Survivor Selection Buttons")]
+    [SerializeField] private Button StartMission_Button;
+    [SerializeField] private Button Cancel_Button;
+
+    [Header("List Content Transforms")]
+    [SerializeField] private Transform MissionList_Content;
+    [SerializeField] private Transform SurvivorRoster_Content;
+    [SerializeField] private Transform Selection_Content; // Survivor selection list
 
     [Header("Prefabs")]
     [SerializeField] private GameObject missionListItemPrefab;
-    [SerializeField] private GameObject survivorSelectionItemPrefab;
-    [SerializeField] private GameObject survivorListItemPrefab;
+    [SerializeField] private GameObject survivorListItemPrefab; // For the main roster
+    [SerializeField] private GameObject survivorSelectionItemPrefab; // For the mission selection list
 
-    [Header("Mission Details")]
+    [Header("Mission Details UI")]
     [SerializeField] private TextMeshProUGUI missionNameText;
     [SerializeField] private TextMeshProUGUI missionDescriptionText;
-    [SerializeField] private TextMeshProUGUI missionRewardsText;
     [SerializeField] private TextMeshProUGUI missionDurationText;
+    [SerializeField] private TextMeshProUGUI missionRewardText;
     [SerializeField] private TextMeshProUGUI missionSuccessChanceText;
-    [SerializeField] private Button selectSurvivorsButton; // This is on the mission details panel
 
+    // Private Data
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
-    private List<GameObject> spawnedSelectionItems = new List<GameObject>();
     private List<GameObject> spawnedSanctuarySurvivorItems = new List<GameObject>();
+    private List<GameObject> spawnedSelectionItems = new List<GameObject>();
     private List<Survivor> selectedSurvivors = new List<Survivor>();
     private MissionData currentMission;
 
-    private void Start()
+    void Start()
     {
         SetupButtonListeners();
-        ShowSanctuaryPanel();
-        RefreshMissionList();
-        RefreshSanctuarySurvivorList();
+        ShowSanctuaryPanel(); // Start on the main panel
+        RefreshAllLists();
     }
 
     private void SetupButtonListeners()
     {
-        if (backToCampButton != null) backToCampButton.onClick.AddListener(OnBackToCamp);
-        if (backToMissionListButton != null) backToMissionListButton.onClick.AddListener(ShowSanctuaryPanel);
-        if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
-        if (selectSurvivorsButton != null) selectSurvivorsButton.onClick.AddListener(OnSelectSurvivors);
-        if (startMissionButton != null) startMissionButton.onClick.AddListener(OnStartMission);
+        // Navigation
+        if (BackToUpgradesButton != null) BackToUpgradesButton.onClick.AddListener(OnBackToCamp);
+        if (Close_Button != null) Close_Button.onClick.AddListener(ShowSanctuaryPanel);
+        if (Cancel_Button != null) Cancel_Button.onClick.AddListener(ShowMissionDetailsPanel);
+
+        // Actions
+        if (SelectSurvivors_Button != null) SelectSurvivors_Button.onClick.AddListener(OnSelectSurvivors);
+        if (StartMission_Button != null) StartMission_Button.onClick.AddListener(OnStartMission);
     }
 
-    public void OnStartMission()
+    private void RefreshAllLists()
     {
-        if (currentMission != null && selectedSurvivors.Count > 0)
-        {
-            MissionController.Instance.StartMission(currentMission, selectedSurvivors);
-            // Potentially clear selected survivors and return to mission list
-            selectedSurvivors.Clear();
-            ShowSanctuaryPanel();
-        }
+        RefreshMissionList();
+        RefreshSanctuarySurvivorList();
     }
 
-    public void OnBackToCamp()
-    {
-        // It's good practice to disable the current UI before transitioning away
-        // to prevent any lingering visuals or interaction.
-        gameObject.SetActive(false);
-        SceneTransitionManager.Instance.LoadCampScene();
-    }
+    // --- Panel Navigation ---
 
     private void ShowSanctuaryPanel()
     {
-        sanctuaryPanel.SetActive(true);
-        missionDetailsPanel.SetActive(false);
-        survivorSelectionPanel.SetActive(false);
+        if (SanctuaryMainPanel != null) SanctuaryMainPanel.SetActive(true);
+        if (MissionDetailsPanel != null) MissionDetailsPanel.SetActive(false);
+        if (SurvivorSelectionPanel != null) SurvivorSelectionPanel.SetActive(false);
     }
 
     private void ShowMissionDetailsPanel()
     {
-        sanctuaryPanel.SetActive(false);
-        missionDetailsPanel.SetActive(true);
-        survivorSelectionPanel.SetActive(false);
+        if (SanctuaryMainPanel != null) SanctuaryMainPanel.SetActive(false);
+        if (MissionDetailsPanel != null) MissionDetailsPanel.SetActive(true);
+        if (SurvivorSelectionPanel != null) SurvivorSelectionPanel.SetActive(false);
     }
 
     private void ShowSurvivorSelectionPanel()
     {
-        if (sanctuaryPanel != null) sanctuaryPanel.SetActive(false);
-        if (missionDetailsPanel != null) missionDetailsPanel.SetActive(false);
-        if (survivorSelectionPanel != null) survivorSelectionPanel.SetActive(true);
+        if (SanctuaryMainPanel != null) SanctuaryMainPanel.SetActive(false);
+        if (MissionDetailsPanel != null) MissionDetailsPanel.SetActive(false);
+        if (SurvivorSelectionPanel != null) SurvivorSelectionPanel.SetActive(true);
     }
 
-    private void RefreshMissionList()
+    // --- Public Methods (Called by other UI elements) ---
+
+    public void DisplayMissionDetails(MissionData missionData)
     {
-        ClearSpawnedItems(spawnedMissionItems);
-        if (MissionController.Instance != null && missionListItemPrefab != null)
-        {
-            foreach (var mission in MissionController.Instance.allPossibleMissions)
-            {
-                GameObject missionItemGO = Instantiate(missionListItemPrefab, missionListContent);
-                MissionListItemUI itemUI = missionItemGO.GetComponent<MissionListItemUI>();
-                if (itemUI != null)
-                {
-                    itemUI.Setup(mission, this);
-                    spawnedMissionItems.Add(missionItemGO);
-                }
-            }
-        }
+        currentMission = missionData;
+        if (missionNameText != null) missionNameText.text = missionData.missionName;
+        if (missionDescriptionText != null) missionDescriptionText.text = missionData.description;
+        if (missionRewardText != null) missionRewardText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
+        if (missionDurationText != null) missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
+        if (missionSuccessChanceText != null) missionSuccessChanceText.text = GetFormattedSuccessChance(missionData.baseSuccessChance);
+
+        ShowMissionDetailsPanel();
     }
 
     public void OnSurvivorToggleChanged(Survivor survivor, bool isSelected)
     {
         if (isSelected)
         {
-            if (!selectedSurvivors.Contains(survivor))
-            {
-                selectedSurvivors.Add(survivor);
-            }
+            if (!selectedSurvivors.Contains(survivor)) selectedSurvivors.Add(survivor);
         }
         else
         {
-            if (selectedSurvivors.Contains(survivor))
-            {
-                selectedSurvivors.Remove(survivor);
-            }
+            if (selectedSurvivors.Contains(survivor)) selectedSurvivors.Remove(survivor);
         }
     }
 
-    private void RefreshSurvivorList()
+    // --- Private UI Logic ---
+
+    private void OnBackToCamp()
     {
-        ClearSpawnedItems(spawnedSelectionItems);
-        if (GameDataManager.Instance != null && survivorSelectionItemPrefab != null)
+        gameObject.SetActive(false);
+        SceneTransitionManager.Instance.LoadCampScene();
+    }
+
+    private void OnSelectSurvivors()
+    {
+        ShowSurvivorSelectionPanel();
+        RefreshSurvivorSelectionList();
+    }
+
+    private void OnStartMission()
+    {
+        if (currentMission != null && selectedSurvivors.Count > 0)
         {
-            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
+            MissionController.Instance.StartMission(currentMission, selectedSurvivors);
+            selectedSurvivors.Clear();
+            ShowSanctuaryPanel();
+        }
+    }
+
+    private void RefreshMissionList()
+    {
+        ClearSpawnedItems(spawnedMissionItems);
+        if (GameDataManager.Instance != null && missionListItemPrefab != null && MissionList_Content != null)
+        {
+            foreach (var mission in MissionController.Instance.allPossibleMissions)
             {
-                GameObject survivorItemGO = Instantiate(survivorSelectionItemPrefab, survivorSelectionContent);
-                SurvivorSelectionItemUI itemUI = survivorItemGO.GetComponent<SurvivorSelectionItemUI>();
+                GameObject itemGO = Instantiate(missionListItemPrefab, MissionList_Content);
+                var itemUI = itemGO.GetComponent<MissionListItemUI>();
                 if (itemUI != null)
                 {
-                    itemUI.Setup(survivor, this);
-                    spawnedSelectionItems.Add(survivorItemGO);
+                    itemUI.Setup(mission, this); // 'this' is the SurvivorCampUI instance
+                    spawnedMissionItems.Add(itemGO);
                 }
             }
         }
     }
 
-    private string GetFormattedSuccessChance(float chance)
+    private void RefreshSanctuarySurvivorList()
     {
-        string colorHex;
-        if (chance > 0.75f)
+        ClearSpawnedItems(spawnedSanctuarySurvivorItems);
+        if (GameDataManager.Instance != null && survivorListItemPrefab != null && SurvivorRoster_Content != null)
         {
-            colorHex = "#00FF00"; // Green
-        }
-        else if (chance > 0.4f)
-        {
-            colorHex = "#FFFF00"; // Yellow
-        }
-        else
-        {
-            colorHex = "#FF0000"; // Red
-        }
-        return $"Base Success: <color={colorHex}>{chance * 100}%</color>";
-    }
-
-    public void ShowMissionDetails(MissionData missionData)
-    {
-        if (missionData != null)
-        {
-            currentMission = missionData;
-            missionNameText.text = missionData.missionName;
-            missionDescriptionText.text = missionData.description;
-            missionRewardsText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
-            missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
-            missionSuccessChanceText.text = GetFormattedSuccessChance(missionData.baseSuccessChance);
-            ShowMissionDetailsPanel();
+            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
+            {
+                GameObject itemGO = Instantiate(survivorListItemPrefab, SurvivorRoster_Content);
+                var itemUI = itemGO.GetComponent<SurvivorListItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(survivor);
+                    spawnedSanctuarySurvivorItems.Add(itemGO);
+                }
+            }
         }
     }
 
-    public void OnSelectSurvivors()
+    private void RefreshSurvivorSelectionList()
     {
-        Debug.Log("OnSelectSurvivors called. Attempting to show survivor selection panel.");
-        ShowSurvivorSelectionPanel();
-        RefreshSurvivorList();
+        ClearSpawnedItems(spawnedSelectionItems);
+        if (GameDataManager.Instance != null && survivorSelectionItemPrefab != null && Selection_Content != null)
+        {
+            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
+            {
+                // Later, we might want to filter out survivors who are already on a mission
+                GameObject itemGO = Instantiate(survivorSelectionItemPrefab, Selection_Content);
+                var itemUI = itemGO.GetComponent<SurvivorSelectionItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(survivor, this);
+                    spawnedSelectionItems.Add(itemGO);
+                }
+            }
+        }
     }
 
     private void ClearSpawnedItems(List<GameObject> items)
     {
         foreach (var item in items)
         {
-            if (item != null)
-            {
-                Destroy(item);
-            }
+            if (item != null) Destroy(item);
         }
         items.Clear();
     }
 
-    private void RefreshSanctuarySurvivorList()
+    private string GetFormattedSuccessChance(float chance)
     {
-        ClearSpawnedItems(spawnedSanctuarySurvivorItems);
-        if (GameDataManager.Instance != null && survivorListItemPrefab != null)
-        {
-            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
-            {
-                GameObject survivorItemGO = Instantiate(survivorListItemPrefab, sanctuarySurvivorListContent);
-                SurvivorListItemUI itemUI = survivorItemGO.GetComponent<SurvivorListItemUI>();
-                if (itemUI != null)
-                {
-                    itemUI.Setup(survivor);
-                    spawnedSanctuarySurvivorItems.Add(survivorItemGO);
-                }
-            }
-        }
+        string colorHex = (chance > 0.75f) ? "#00FF00" : (chance > 0.4f) ? "#FFFF00" : "#FF0000";
+        return $"Base Success: <color={colorHex}>{chance * 100}%</color>";
     }
 
     private void OnDestroy()
     {
         // Clean up listeners
-        if (backToCampButton != null) backToCampButton.onClick.RemoveAllListeners();
-        if (backToMissionListButton != null) backToMissionListButton.onClick.RemoveAllListeners();
-        if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.RemoveAllListeners();
-        if (selectSurvivorsButton != null) selectSurvivorsButton.onClick.RemoveAllListeners();
-        if (startMissionButton != null) startMissionButton.onClick.RemoveAllListeners();
-
-        ClearSpawnedItems(spawnedMissionItems);
-        ClearSpawnedItems(spawnedSelectionItems);
-        ClearSpawnedItems(spawnedSanctuarySurvivorItems);
+        if (BackToUpgradesButton != null) BackToUpgradesButton.onClick.RemoveAllListeners();
+        if (Close_Button != null) Close_Button.onClick.RemoveAllListeners();
+        if (Cancel_Button != null) Cancel_Button.onClick.RemoveAllListeners();
+        if (SelectSurvivors_Button != null) SelectSurvivors_Button.onClick.RemoveAllListeners();
+        if (StartMission_Button != null) StartMission_Button.onClick.RemoveAllListeners();
     }
 }
