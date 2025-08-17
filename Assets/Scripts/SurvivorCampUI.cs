@@ -99,7 +99,7 @@ public class SurvivorCampUI : MonoBehaviour
         ClearSpawnedItems(spawnedMissionItems);
         if (MissionController.Instance != null && missionListItemPrefab != null)
         {
-            foreach (var mission in MissionController.Instance.availableMissions)
+            foreach (var mission in MissionController.Instance.allPossibleMissions)
             {
                 GameObject missionItemGO = Instantiate(missionListItemPrefab, missionListContent);
                 MissionListItemUI itemUI = missionItemGO.GetComponent<MissionListItemUI>();
@@ -135,7 +135,7 @@ public class SurvivorCampUI : MonoBehaviour
         ClearSpawnedItems(spawnedSelectionItems);
         if (GameDataManager.Instance != null && survivorSelectionItemPrefab != null)
         {
-            foreach (var survivor in GameDataManager.Instance.gameData.survivors)
+            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
             {
                 GameObject survivorItemGO = Instantiate(survivorSelectionItemPrefab, survivorSelectionContent);
                 SurvivorSelectionItemUI itemUI = survivorItemGO.GetComponent<SurvivorSelectionItemUI>();

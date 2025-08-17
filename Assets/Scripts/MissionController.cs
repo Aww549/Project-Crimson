@@ -9,7 +9,7 @@ public class MissionController : MonoBehaviour
 
     // We will store our MissionData assets in a Resources folder
     // so the controller can load them automatically.
-    private List<MissionData> allPossibleMissions;
+    public List<MissionData> allPossibleMissions;
 
     void Awake()
     {
