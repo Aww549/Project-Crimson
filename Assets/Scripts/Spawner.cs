@@ -35,6 +35,7 @@ public class Spawner : MonoBehaviour
     public float runnerWaveChance = 0.15f;
     [Range(0, 1)]
     public float baseSurvivorSpawnChance = 0.1f; // The base chance before the pity timer.
+    public float pityChanceIncrease = 0.05f; // How much the chance increases when a survivor doesn't spawn.
 
     [Header("Difficulty Scaling")]
     private int waveNumber = 0;
@@ -146,9 +147,16 @@ public class Spawner : MonoBehaviour
             survivorWillSpawn = true;
             survivorSpawnIndex = Random.Range(0, scrapToSpawn);
             GameDataManager.Instance.gameData.survivorPityChance = 0f;
+            Debug.Log("A survivor has spawned! Pity timer reset.");
 
             // DEFINITIVE FIX: Set the flag to true the moment we decide to spawn a survivor.
             survivorHasBeenSpawnedThisRun = true;
+        }
+        else if (canSpawnSurvivor)
+        {
+            // If a survivor *could* have spawned but didn't, increase the pity timer.
+            GameDataManager.Instance.gameData.survivorPityChance += pityChanceIncrease;
+            Debug.Log($"Survivor did not spawn. Pity chance increased to {GameDataManager.Instance.gameData.survivorPityChance * 100}%.");
         }
 
         for (int i = 0; i < scrapToSpawn; i++)

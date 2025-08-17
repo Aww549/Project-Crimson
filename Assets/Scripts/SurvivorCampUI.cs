@@ -66,6 +66,9 @@ public class SurvivorCampUI : MonoBehaviour
 
     public void OnBackToCamp()
     {
+        // It's good practice to disable the current UI before transitioning away
+        // to prevent any lingering visuals or interaction.
+        gameObject.SetActive(false);
         SceneTransitionManager.Instance.LoadCampScene();
     }
 
@@ -85,9 +88,9 @@ public class SurvivorCampUI : MonoBehaviour
 
     private void ShowSurvivorSelectionPanel()
     {
-        sanctuaryPanel.SetActive(false);
-        missionDetailsPanel.SetActive(false);
-        survivorSelectionPanel.SetActive(true);
+        if (sanctuaryPanel != null) sanctuaryPanel.SetActive(false);
+        if (missionDetailsPanel != null) missionDetailsPanel.SetActive(false);
+        if (survivorSelectionPanel != null) survivorSelectionPanel.SetActive(true);
     }
 
     private void RefreshMissionList()
@@ -144,6 +147,24 @@ public class SurvivorCampUI : MonoBehaviour
         }
     }
 
+    private string GetFormattedSuccessChance(float chance)
+    {
+        string colorHex;
+        if (chance > 0.75f)
+        {
+            colorHex = "#00FF00"; // Green
+        }
+        else if (chance > 0.4f)
+        {
+            colorHex = "#FFFF00"; // Yellow
+        }
+        else
+        {
+            colorHex = "#FF0000"; // Red
+        }
+        return $"Base Success: <color={colorHex}>{chance * 100}%</color>";
+    }
+
     public void ShowMissionDetails(MissionData missionData)
     {
         if (missionData != null)
@@ -153,13 +174,14 @@ public class SurvivorCampUI : MonoBehaviour
             missionDescriptionText.text = missionData.description;
             missionRewardsText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
             missionDurationText.text = $"Duration: {missionData.durationHours} Hours";
-            missionSuccessChanceText.text = $"Base Success: {missionData.baseSuccessChance * 100}%";
+            missionSuccessChanceText.text = GetFormattedSuccessChance(missionData.baseSuccessChance);
             ShowMissionDetailsPanel();
         }
     }
 
     public void OnStartMission()
     {
+        Debug.Log("OnStartMission called. Attempting to show survivor selection panel.");
         ShowSurvivorSelectionPanel();
         RefreshSurvivorList();
     }

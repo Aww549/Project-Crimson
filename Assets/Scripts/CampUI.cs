@@ -25,6 +25,12 @@ public class CampUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scrapScavengingLevelText;
     [SerializeField] private TextMeshProUGUI fortifyAmmoLevelText;
 
+    [Header("Cost Display")]
+    [SerializeField] private TextMeshProUGUI combatTrainingCostText;
+    [SerializeField] private TextMeshProUGUI firstAidKitCostText;
+    [SerializeField] private TextMeshProUGUI scrapScavengingCostText;
+    [SerializeField] private TextMeshProUGUI fortifyAmmoCostText;
+
     private void Start()
     {
         SetupButtonListeners();
@@ -48,6 +54,17 @@ public class CampUI : MonoBehaviour
     {
         UpdateCurrencyDisplay();
         UpdateUpgradeLevelsDisplay();
+        UpdateUpgradeCostsDisplay();
+    }
+
+    private void UpdateUpgradeCostsDisplay()
+    {
+        if (GameDataManager.Instance == null) return;
+
+        combatTrainingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel)}";
+        firstAidKitCostText.text = $"Cost: {GameDataManager.Instance.GetShieldUpgradeCost()}";
+        scrapScavengingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel)}";
+        fortifyAmmoCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel)}";
     }
 
     private void UpdateUpgradeLevelsDisplay()
