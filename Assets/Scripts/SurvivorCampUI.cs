@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using TMPro;
 
 public class SurvivorCampUI : MonoBehaviour
 {
     [Header("Panels")]
-    [SerializeField] private GameObject survivorListPanel;
-    [SerializeField] private GameObject missionListPanel;
+    [SerializeField] private GameObject sanctuaryPanel;
     [SerializeField] private GameObject missionDetailsPanel;
     [SerializeField] private GameObject survivorSelectionPanel;
 
@@ -17,22 +17,19 @@ public class SurvivorCampUI : MonoBehaviour
     [SerializeField] private Button confirmMissionButton;
 
     [Header("List Content")]
-    [SerializeField] private Transform survivorListContent;
     [SerializeField] private Transform missionListContent;
     [SerializeField] private Transform survivorSelectionContent;
 
     [Header("Prefabs")]
-    [SerializeField] private GameObject survivorListItemPrefab;
     [SerializeField] private GameObject missionListItemPrefab;
     [SerializeField] private GameObject survivorSelectionItemPrefab;
 
     [Header("Mission Details")]
-    [SerializeField] private Text missionNameText;
-    [SerializeField] private Text missionDescriptionText;
-    [SerializeField] private Text missionRewardsText;
+    [SerializeField] private TextMeshProUGUI missionNameText;
+    [SerializeField] private TextMeshProUGUI missionDescriptionText;
+    [SerializeField] private TextMeshProUGUI missionRewardsText;
     [SerializeField] private Button startMissionButton;
 
-    private List<GameObject> spawnedSurvivorItems = new List<GameObject>();
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
     private List<GameObject> spawnedSelectionItems = new List<GameObject>();
     private List<Survivor> selectedSurvivors = new List<Survivor>();
@@ -41,14 +38,14 @@ public class SurvivorCampUI : MonoBehaviour
     private void Start()
     {
         SetupButtonListeners();
-        ShowMissionListPanel();
+        ShowSanctuaryPanel();
         RefreshMissionList();
     }
 
     private void SetupButtonListeners()
     {
         backToCampButton.onClick.AddListener(OnBackToCamp);
-        backToMissionListButton.onClick.AddListener(ShowMissionListPanel);
+        backToMissionListButton.onClick.AddListener(ShowSanctuaryPanel);
         backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
         startMissionButton.onClick.AddListener(OnStartMission);
         if (confirmMissionButton != null) confirmMissionButton.onClick.AddListener(OnConfirmMission);
@@ -61,7 +58,7 @@ public class SurvivorCampUI : MonoBehaviour
             MissionController.Instance.StartMission(currentMission, selectedSurvivors);
             // Potentially clear selected survivors and return to mission list
             selectedSurvivors.Clear();
-            ShowMissionListPanel();
+            ShowSanctuaryPanel();
         }
     }
 
@@ -70,26 +67,23 @@ public class SurvivorCampUI : MonoBehaviour
         SceneTransitionManager.Instance.LoadCampScene();
     }
 
-    private void ShowMissionListPanel()
+    private void ShowSanctuaryPanel()
     {
-        survivorListPanel.SetActive(false);
-        missionListPanel.SetActive(true);
+        sanctuaryPanel.SetActive(true);
         missionDetailsPanel.SetActive(false);
         survivorSelectionPanel.SetActive(false);
     }
 
     private void ShowMissionDetailsPanel()
     {
-        survivorListPanel.SetActive(false);
-        missionListPanel.SetActive(false);
+        sanctuaryPanel.SetActive(false);
         missionDetailsPanel.SetActive(true);
         survivorSelectionPanel.SetActive(false);
     }
 
     private void ShowSurvivorSelectionPanel()
     {
-        survivorListPanel.SetActive(false);
-        missionListPanel.SetActive(false);
+        sanctuaryPanel.SetActive(false);
         missionDetailsPanel.SetActive(false);
         survivorSelectionPanel.SetActive(true);
     }
@@ -187,7 +181,6 @@ public class SurvivorCampUI : MonoBehaviour
         if (startMissionButton != null) startMissionButton.onClick.RemoveAllListeners();
         if (confirmMissionButton != null) confirmMissionButton.onClick.RemoveAllListeners();
 
-        ClearSpawnedItems(spawnedSurvivorItems);
         ClearSpawnedItems(spawnedMissionItems);
         ClearSpawnedItems(spawnedSelectionItems);
     }

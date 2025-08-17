@@ -1,16 +1,15 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class CampUI : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject mainPanel;
-    [SerializeField] private GameObject upgradesPanel;
 
     [Header("Main Panel Buttons")]
     [SerializeField] private Button missionsButton;
-    [SerializeField] private Button upgradesButton;
     [SerializeField] private Button exitToMainMenuButton;
 
     [Header("Building Upgrade Buttons")]
@@ -20,13 +19,20 @@ public class CampUI : MonoBehaviour
     [SerializeField] private Button townHallUpgradeButton;
 
     [Header("Currency Display")]
-    [SerializeField] private Text scrapText;
-    [SerializeField] private Text materialsText;
+    [SerializeField] private TextMeshProUGUI scrapText;
+    [SerializeField] private TextMeshProUGUI materialsText;
+
+    [Header("Level Display")]
+    [SerializeField] private TextMeshProUGUI armoryLevelText;
+    [SerializeField] private TextMeshProUGUI hospitalLevelText;
+    [SerializeField] private TextMeshProUGUI workshopLevelText;
+    [SerializeField] private TextMeshProUGUI townHallLevelText;
 
     private void Start()
     {
         SetupButtonListeners();
         UpdateCurrencyDisplay();
+        UpdateUpgradeLevelsDisplay();
         ShowMainPanel();
     }
 
@@ -34,7 +40,6 @@ public class CampUI : MonoBehaviour
     {
         // Main panel buttons
         missionsButton.onClick.AddListener(OnMissionsButtonClick);
-        upgradesButton.onClick.AddListener(ShowUpgradesPanel);
         exitToMainMenuButton.onClick.AddListener(OnExitToMainMenu);
 
         // Building upgrade buttons
@@ -52,13 +57,17 @@ public class CampUI : MonoBehaviour
     private void ShowMainPanel()
     {
         mainPanel.SetActive(true);
-        upgradesPanel.SetActive(false);
     }
 
-    private void ShowUpgradesPanel()
+    private void UpdateUpgradeLevelsDisplay()
     {
-        mainPanel.SetActive(false);
-        upgradesPanel.SetActive(true);
+        if (GameDataManager.Instance == null) return;
+
+        armoryLevelText.text = $"Level {GameDataManager.Instance.gameData.armoryLevel}";
+        hospitalLevelText.text = $"Level {GameDataManager.Instance.gameData.hospitalLevel}";
+        workshopLevelText.text = $"Level {GameDataManager.Instance.gameData.workshopLevel}";
+        // Assuming town hall doesn't have a level in GameData, or add it if it does
+        // townHallLevelText.text = $"Level {GameDataManager.Instance.gameData.townHallLevel}";
     }
 
     private void OnBuildingUpgrade(string buildingName)
@@ -68,6 +77,7 @@ public class CampUI : MonoBehaviour
         {
             // Add your upgrade logic here
             UpdateCurrencyDisplay();
+            UpdateUpgradeLevelsDisplay();
         }
     }
 
@@ -90,7 +100,6 @@ public class CampUI : MonoBehaviour
     {
         // Clean up listeners
         if (missionsButton != null) missionsButton.onClick.RemoveAllListeners();
-        if (upgradesButton != null) upgradesButton.onClick.RemoveAllListeners();
         if (exitToMainMenuButton != null) exitToMainMenuButton.onClick.RemoveAllListeners();
         if (armoryUpgradeButton != null) armoryUpgradeButton.onClick.RemoveAllListeners();
         if (hospitalUpgradeButton != null) hospitalUpgradeButton.onClick.RemoveAllListeners();
