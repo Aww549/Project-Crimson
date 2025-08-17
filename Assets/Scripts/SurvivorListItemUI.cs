@@ -25,6 +25,22 @@ public class SurvivorListItemUI : MonoBehaviour
     private Survivor assignedSurvivor;
     private bool isFlipped = false;
 
+    void Awake()
+    {
+        ValidateReferences();
+    }
+
+    private void ValidateReferences()
+    {
+        if (frontPanel == null) Debug.LogError("SurvivorListItemUI: frontPanel is not assigned.");
+        if (backPanel == null) Debug.LogError("SurvivorListItemUI: backPanel is not assigned.");
+        if (onMissionOverlay == null) Debug.LogError("SurvivorListItemUI: onMissionOverlay is not assigned.");
+        if (survivorNameText == null) Debug.LogError("SurvivorListItemUI: survivorNameText is not assigned.");
+        if (back_survivorNameText == null) Debug.LogError("SurvivorListItemUI: back_survivorNameText is not assigned.");
+        if (back_traitsText == null) Debug.LogError("SurvivorListItemUI: back_traitsText is not assigned.");
+        if (missionTimerText == null) Debug.LogError("SurvivorListItemUI: missionTimerText is not assigned.");
+    }
+
     /// <summary>
     /// Populates the UI elements with data from a specific survivor.
     /// </summary>
@@ -33,23 +49,32 @@ public class SurvivorListItemUI : MonoBehaviour
         assignedSurvivor = survivor;
         isFlipped = false;
 
+        if (survivor == null)
+        {
+            Debug.LogError("Setup called with a null survivor.");
+            return;
+        }
+
         // --- Populate Shared Info ---
-        survivorNameText.text = survivor.survivorName;
-        back_survivorNameText.text = survivor.survivorName;
+        if(survivorNameText != null) survivorNameText.text = survivor.survivorName;
+        if(back_survivorNameText != null) back_survivorNameText.text = survivor.survivorName;
 
         // --- Populate Traits on the Back ---
-        if (survivor.traits == null || survivor.traits.Count == 0)
+        if(back_traitsText != null)
         {
-            back_traitsText.text = "<i>No Traits</i>";
-        }
-        else
-        {
-            StringBuilder traitsBuilder = new StringBuilder();
-            foreach (var trait in survivor.traits)
+            if (survivor.traits == null || survivor.traits.Count == 0)
             {
-                traitsBuilder.AppendLine($"<b>{trait.traitName}</b>: {trait.description}");
+                back_traitsText.text = "<i>No Traits</i>";
             }
-            back_traitsText.text = traitsBuilder.ToString();
+            else
+            {
+                StringBuilder traitsBuilder = new StringBuilder();
+                foreach (var trait in survivor.traits)
+                {
+                    traitsBuilder.AppendLine($"<b>{trait.traitName}</b>: {trait.description}");
+                }
+                back_traitsText.text = traitsBuilder.ToString();
+            }
         }
 
         // --- Update View Based on Status ---
@@ -61,19 +86,21 @@ public class SurvivorListItemUI : MonoBehaviour
     /// </summary>
     public void UpdateStatusView()
     {
+        if (assignedSurvivor == null) return;
+
         if (assignedSurvivor.status == SurvivorStatus.OnMission)
         {
-            frontPanel.SetActive(true); // Always show the front when on a mission
-            backPanel.SetActive(false);
-            onMissionOverlay.SetActive(true);
+            if(frontPanel != null) frontPanel.SetActive(true);
+            if(backPanel != null) backPanel.SetActive(false);
+            if(onMissionOverlay != null) onMissionOverlay.SetActive(true);
             // We'll add the timer logic here later
         }
         else // Idle or Wounded
         {
-            onMissionOverlay.SetActive(false);
+            if(onMissionOverlay != null) onMissionOverlay.SetActive(false);
             // Set initial flipped state
-            frontPanel.SetActive(!isFlipped);
-            backPanel.SetActive(isFlipped);
+            if(frontPanel != null) frontPanel.SetActive(!isFlipped);
+            if(backPanel != null) backPanel.SetActive(isFlipped);
         }
     }
 

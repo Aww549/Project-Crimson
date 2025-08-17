@@ -98,7 +98,7 @@ public class SurvivorCampUI : MonoBehaviour
 
     // --- Public Methods (Called by other UI elements) ---
 
-    public void DisplayMissionDetails(MissionData missionData)
+    public void ShowMissionDetails(MissionData missionData)
     {
         currentMission = missionData;
         if (missionNameText != null) missionNameText.text = missionData.missionName;
