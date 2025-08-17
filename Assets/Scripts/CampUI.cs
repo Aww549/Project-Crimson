@@ -75,8 +75,8 @@ public class CampUI : MonoBehaviour
     {
         if (GameDataManager.Instance != null)
         {
-            scrapText.text = $"Scrap: {GameDataManager.Instance.gameData.scrapCurrency}";
-            materialsText.text = $"Materials: {GameDataManager.Instance.gameData.materialsCurrency}";
+            scrapText.text = $"Scrap: {GameDataManager.Instance.gameData.totalScrap}";
+            materialsText.text = $"Materials: {GameDataManager.Instance.gameData.materials}";
         }
     }
 

@@ -10,7 +10,7 @@ public class SceneTransitionManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<SceneTransitionManager>();
+                _instance = FindFirstObjectByType<SceneTransitionManager>();
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("SceneTransitionManager");
