@@ -14,7 +14,7 @@ public class SurvivorCampUI : MonoBehaviour
     [SerializeField] private Button backToCampButton;
     [SerializeField] private Button backToMissionListButton;
     [SerializeField] private Button backToMissionDetailsButton;
-    [SerializeField] private Button confirmMissionButton;
+    [SerializeField] private Button startMissionButton; // This is on the survivor selection panel
 
     [Header("List Content")]
     [SerializeField] private Transform missionListContent;
@@ -30,7 +30,7 @@ public class SurvivorCampUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI missionRewardsText;
     [SerializeField] private TextMeshProUGUI missionDurationText;
     [SerializeField] private TextMeshProUGUI missionSuccessChanceText;
-    [SerializeField] private Button startMissionButton;
+    [SerializeField] private Button selectSurvivorsButton; // This is on the mission details panel
 
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
     private List<GameObject> spawnedSelectionItems = new List<GameObject>();
@@ -49,11 +49,11 @@ public class SurvivorCampUI : MonoBehaviour
         if (backToCampButton != null) backToCampButton.onClick.AddListener(OnBackToCamp);
         if (backToMissionListButton != null) backToMissionListButton.onClick.AddListener(ShowSanctuaryPanel);
         if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
+        if (selectSurvivorsButton != null) selectSurvivorsButton.onClick.AddListener(OnSelectSurvivors);
         if (startMissionButton != null) startMissionButton.onClick.AddListener(OnStartMission);
-        if (confirmMissionButton != null) confirmMissionButton.onClick.AddListener(OnConfirmMission);
     }
 
-    public void OnConfirmMission()
+    public void OnStartMission()
     {
         if (currentMission != null && selectedSurvivors.Count > 0)
         {
@@ -179,9 +179,9 @@ public class SurvivorCampUI : MonoBehaviour
         }
     }
 
-    public void OnStartMission()
+    public void OnSelectSurvivors()
     {
-        Debug.Log("OnStartMission called. Attempting to show survivor selection panel.");
+        Debug.Log("OnSelectSurvivors called. Attempting to show survivor selection panel.");
         ShowSurvivorSelectionPanel();
         RefreshSurvivorList();
     }
@@ -204,8 +204,8 @@ public class SurvivorCampUI : MonoBehaviour
         if (backToCampButton != null) backToCampButton.onClick.RemoveAllListeners();
         if (backToMissionListButton != null) backToMissionListButton.onClick.RemoveAllListeners();
         if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.RemoveAllListeners();
+        if (selectSurvivorsButton != null) selectSurvivorsButton.onClick.RemoveAllListeners();
         if (startMissionButton != null) startMissionButton.onClick.RemoveAllListeners();
-        if (confirmMissionButton != null) confirmMissionButton.onClick.RemoveAllListeners();
 
         ClearSpawnedItems(spawnedMissionItems);
         ClearSpawnedItems(spawnedSelectionItems);

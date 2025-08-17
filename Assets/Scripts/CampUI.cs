@@ -61,20 +61,20 @@ public class CampUI : MonoBehaviour
     {
         if (GameDataManager.Instance == null) return;
 
-        combatTrainingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel)}";
-        firstAidKitCostText.text = $"Cost: {GameDataManager.Instance.GetShieldUpgradeCost()}";
-        scrapScavengingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel)}";
-        fortifyAmmoCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel)}";
+        if (combatTrainingCostText != null) combatTrainingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel)}";
+        if (firstAidKitCostText != null) firstAidKitCostText.text = $"Cost: {GameDataManager.Instance.GetShieldUpgradeCost()}";
+        if (scrapScavengingCostText != null) scrapScavengingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel)}";
+        if (fortifyAmmoCostText != null) fortifyAmmoCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel)}";
     }
 
     private void UpdateUpgradeLevelsDisplay()
     {
         if (GameDataManager.Instance == null) return;
 
-        combatTrainingLevelText.text = $"Level {GameDataManager.Instance.gameData.damageUpgradeLevel}";
-        firstAidKitLevelText.text = $"Level {GameDataManager.Instance.gameData.firstAidKitLevel}";
-        scrapScavengingLevelText.text = $"Level {GameDataManager.Instance.gameData.scrapValueUpgradeLevel}";
-        fortifyAmmoLevelText.text = $"Level {GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel}";
+        if (combatTrainingLevelText != null) combatTrainingLevelText.text = $"Level {GameDataManager.Instance.gameData.damageUpgradeLevel}";
+        if (firstAidKitLevelText != null) firstAidKitLevelText.text = $"Level {GameDataManager.Instance.gameData.firstAidKitLevel}";
+        if (scrapScavengingLevelText != null) scrapScavengingLevelText.text = $"Level {GameDataManager.Instance.gameData.scrapValueUpgradeLevel}";
+        if (fortifyAmmoLevelText != null) fortifyAmmoLevelText.text = $"Level {GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel}";
     }
 
     private void UpdateCurrencyDisplay()
