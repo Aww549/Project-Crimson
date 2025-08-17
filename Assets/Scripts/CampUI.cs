@@ -59,12 +59,29 @@ public class CampUI : MonoBehaviour
 
     private void UpdateUpgradeCostsDisplay()
     {
-        if (GameDataManager.Instance == null) return;
+        if (GameDataManager.Instance == null)
+        {
+            Debug.LogError("GameDataManager is null. Cannot update costs.");
+            return;
+        }
 
-        if (combatTrainingCostText != null) combatTrainingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel)}";
-        if (firstAidKitCostText != null) firstAidKitCostText.text = $"Cost: {GameDataManager.Instance.GetShieldUpgradeCost()}";
-        if (scrapScavengingCostText != null) scrapScavengingCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel)}";
-        if (fortifyAmmoCostText != null) fortifyAmmoCostText.text = $"Cost: {GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel)}";
+        Debug.Log("Updating upgrade costs...");
+
+        int combatCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.damageUpgradeLevel);
+        if (combatTrainingCostText != null) combatTrainingCostText.text = $"Cost: {combatCost}";
+        Debug.Log($"Combat Training Cost Calculated: {combatCost}");
+
+        int shieldCost = GameDataManager.Instance.GetShieldUpgradeCost();
+        if (firstAidKitCostText != null) firstAidKitCostText.text = $"Cost: {shieldCost}";
+        Debug.Log($"First Aid Kit Cost Calculated: {shieldCost} (Level: {GameDataManager.Instance.gameData.firstAidKitLevel})");
+
+        int scrapCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.scrapValueUpgradeLevel);
+        if (scrapScavengingCostText != null) scrapScavengingCostText.text = $"Cost: {scrapCost}";
+        Debug.Log($"Scrap Scavenging Cost Calculated: {scrapCost}");
+
+        int ammoCost = GameDataManager.Instance.GetUpgradeCost(GameDataManager.Instance.gameData.startingSurvivorsUpgradeLevel);
+        if (fortifyAmmoCostText != null) fortifyAmmoCostText.text = $"Cost: {ammoCost}";
+        Debug.Log($"Fortify Ammo Cost Calculated: {ammoCost}");
     }
 
     private void UpdateUpgradeLevelsDisplay()

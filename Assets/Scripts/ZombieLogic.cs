@@ -95,6 +95,10 @@ public class ZombieLogic : MonoBehaviour
 
     void Die()
     {
+        if (PlayerManager.Instance != null)
+        {
+            PlayerManager.Instance.zombiesKilled++;
+        }
         Destroy(gameObject);
     }
 }

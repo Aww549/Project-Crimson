@@ -19,10 +19,12 @@ public class SurvivorCampUI : MonoBehaviour
     [Header("List Content")]
     [SerializeField] private Transform missionListContent;
     [SerializeField] private Transform survivorSelectionContent;
+    [SerializeField] private Transform sanctuarySurvivorListContent;
 
     [Header("Prefabs")]
     [SerializeField] private GameObject missionListItemPrefab;
     [SerializeField] private GameObject survivorSelectionItemPrefab;
+    [SerializeField] private GameObject survivorListItemPrefab;
 
     [Header("Mission Details")]
     [SerializeField] private TextMeshProUGUI missionNameText;
@@ -34,6 +36,7 @@ public class SurvivorCampUI : MonoBehaviour
 
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
     private List<GameObject> spawnedSelectionItems = new List<GameObject>();
+    private List<GameObject> spawnedSanctuarySurvivorItems = new List<GameObject>();
     private List<Survivor> selectedSurvivors = new List<Survivor>();
     private MissionData currentMission;
 
@@ -42,6 +45,7 @@ public class SurvivorCampUI : MonoBehaviour
         SetupButtonListeners();
         ShowSanctuaryPanel();
         RefreshMissionList();
+        RefreshSanctuarySurvivorList();
     }
 
     private void SetupButtonListeners()
@@ -198,6 +202,24 @@ public class SurvivorCampUI : MonoBehaviour
         items.Clear();
     }
 
+    private void RefreshSanctuarySurvivorList()
+    {
+        ClearSpawnedItems(spawnedSanctuarySurvivorItems);
+        if (GameDataManager.Instance != null && survivorListItemPrefab != null)
+        {
+            foreach (var survivor in GameDataManager.Instance.gameData.sanctuarySurvivors)
+            {
+                GameObject survivorItemGO = Instantiate(survivorListItemPrefab, sanctuarySurvivorListContent);
+                SurvivorListItemUI itemUI = survivorItemGO.GetComponent<SurvivorListItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(survivor);
+                    spawnedSanctuarySurvivorItems.Add(survivorItemGO);
+                }
+            }
+        }
+    }
+
     private void OnDestroy()
     {
         // Clean up listeners
@@ -209,5 +231,6 @@ public class SurvivorCampUI : MonoBehaviour
 
         ClearSpawnedItems(spawnedMissionItems);
         ClearSpawnedItems(spawnedSelectionItems);
+        ClearSpawnedItems(spawnedSanctuarySurvivorItems);
     }
 }

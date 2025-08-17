@@ -180,6 +180,7 @@ public class PlayerManager : MonoBehaviour
     public void AddScrap(int amount)
     {
         scrapCount += amount;
+        Debug.Log($"Player picked up {amount} scrap. Total in run: {scrapCount}");
         if (uiManager != null)
         {
             uiManager.UpdateScrapCount(scrapCount);
