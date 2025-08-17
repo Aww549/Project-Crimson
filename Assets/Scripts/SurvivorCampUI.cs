@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 
-public class MissionsUI : MonoBehaviour
+public class SurvivorCampUI : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject survivorListPanel;
@@ -14,6 +14,7 @@ public class MissionsUI : MonoBehaviour
     [SerializeField] private Button backToCampButton;
     [SerializeField] private Button backToMissionListButton;
     [SerializeField] private Button backToMissionDetailsButton;
+    [SerializeField] private Button confirmMissionButton;
 
     [Header("List Content")]
     [SerializeField] private Transform survivorListContent;
@@ -34,6 +35,8 @@ public class MissionsUI : MonoBehaviour
     private List<GameObject> spawnedSurvivorItems = new List<GameObject>();
     private List<GameObject> spawnedMissionItems = new List<GameObject>();
     private List<GameObject> spawnedSelectionItems = new List<GameObject>();
+    private List<Survivor> selectedSurvivors = new List<Survivor>();
+    private MissionData currentMission;
 
     private void Start()
     {
@@ -48,6 +51,18 @@ public class MissionsUI : MonoBehaviour
         backToMissionListButton.onClick.AddListener(ShowMissionListPanel);
         backToMissionDetailsButton.onClick.AddListener(ShowMissionDetailsPanel);
         startMissionButton.onClick.AddListener(OnStartMission);
+        if (confirmMissionButton != null) confirmMissionButton.onClick.AddListener(OnConfirmMission);
+    }
+
+    private void OnConfirmMission()
+    {
+        if (currentMission != null && selectedSurvivors.Count > 0)
+        {
+            MissionController.Instance.StartMission(currentMission, selectedSurvivors);
+            // Potentially clear selected survivors and return to mission list
+            selectedSurvivors.Clear();
+            ShowMissionListPanel();
+        }
     }
 
     private void OnBackToCamp()
@@ -82,28 +97,65 @@ public class MissionsUI : MonoBehaviour
     private void RefreshMissionList()
     {
         ClearSpawnedItems(spawnedMissionItems);
-        if (MissionController.Instance != null)
+        if (MissionController.Instance != null && missionListItemPrefab != null)
         {
-            // Add your mission list population logic here
+            foreach (var mission in MissionController.Instance.availableMissions)
+            {
+                GameObject missionItemGO = Instantiate(missionListItemPrefab, missionListContent);
+                MissionListItemUI itemUI = missionItemGO.GetComponent<MissionListItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(mission, this);
+                    spawnedMissionItems.Add(missionItemGO);
+                }
+            }
+        }
+    }
+
+    public void OnSurvivorToggleChanged(Survivor survivor, bool isSelected)
+    {
+        if (isSelected)
+        {
+            if (!selectedSurvivors.Contains(survivor))
+            {
+                selectedSurvivors.Add(survivor);
+            }
+        }
+        else
+        {
+            if (selectedSurvivors.Contains(survivor))
+            {
+                selectedSurvivors.Remove(survivor);
+            }
         }
     }
 
     private void RefreshSurvivorList()
     {
-        ClearSpawnedItems(spawnedSurvivorItems);
-        if (SanctuaryManager.Instance != null)
+        ClearSpawnedItems(spawnedSelectionItems);
+        if (GameDataManager.Instance != null && survivorSelectionItemPrefab != null)
         {
-            // Add your survivor list population logic here
+            foreach (var survivor in GameDataManager.Instance.gameData.survivors)
+            {
+                GameObject survivorItemGO = Instantiate(survivorSelectionItemPrefab, survivorSelectionContent);
+                SurvivorSelectionItemUI itemUI = survivorItemGO.GetComponent<SurvivorSelectionItemUI>();
+                if (itemUI != null)
+                {
+                    itemUI.Setup(survivor, this);
+                    spawnedSelectionItems.Add(survivorItemGO);
+                }
+            }
         }
     }
 
-    private void OnMissionSelected(MissionData missionData)
+    public void ShowMissionDetails(MissionData missionData)
     {
         if (missionData != null)
         {
-            missionNameText.text = missionData.name;
+            currentMission = missionData;
+            missionNameText.text = missionData.missionName;
             missionDescriptionText.text = missionData.description;
-            missionRewardsText.text = $"Rewards: {missionData.rewards}";
+            missionRewardsText.text = $"Rewards: {missionData.baseRewardAmount} {missionData.rewardType}";
             ShowMissionDetailsPanel();
         }
     }
@@ -133,6 +185,7 @@ public class MissionsUI : MonoBehaviour
         if (backToMissionListButton != null) backToMissionListButton.onClick.RemoveAllListeners();
         if (backToMissionDetailsButton != null) backToMissionDetailsButton.onClick.RemoveAllListeners();
         if (startMissionButton != null) startMissionButton.onClick.RemoveAllListeners();
+        if (confirmMissionButton != null) confirmMissionButton.onClick.RemoveAllListeners();
 
         ClearSpawnedItems(spawnedSurvivorItems);
         ClearSpawnedItems(spawnedMissionItems);
