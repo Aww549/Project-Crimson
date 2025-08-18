@@ -17,23 +17,15 @@ public class HelplessSurvivorPickup : MonoBehaviour
         // Ensure it's the player and that an archetype has been assigned.
         if (rescuedArchetype != null && other.GetComponent<PlayerManager>() != null)
         {
-            // We should only be able to pick up one survivor per run.
+            // This check ensures we only ever "rescue" ONE survivor per run.
+            // This prevents the data from being overwritten if the spawner were to create multiple.
             if (GameDataManager.Instance != null && GameDataManager.Instance.gameData.survivorsRescuedThisRun == 0)
             {
-                // Create a new survivor from the archetype
-                Survivor newSurvivor = new Survivor
-                {
-                    survivorName = rescuedArchetype.archetypeName,
-                    traits = new List<Trait>(rescuedArchetype.traits)
-                };
-
-                // Add the new survivor to the sanctuary roster
-                GameDataManager.Instance.AddSurvivor(newSurvivor);
-
-                // Also call the original method to track rescued count
+                // Tell the GameDataManager which archetype was rescued.
+                // The actual Survivor object is created at the end of the run by the SanctuaryManager.
                 GameDataManager.Instance.SetRescuedSurvivor(rescuedArchetype);
 
-                Debug.Log($"Player rescued survivor: {newSurvivor.survivorName}. Added to sanctuary.");
+                Debug.Log($"Player picked up survivor: {rescuedArchetype.archetypeName}. This will be processed at the end of the run.");
 
                 Destroy(gameObject);
             }

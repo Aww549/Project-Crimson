@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Text;
 using System; // Required for TimeSpan
+using System.Linq;
 
 public class SurvivorListItemUI : MonoBehaviour
 {
@@ -51,13 +52,25 @@ public class SurvivorListItemUI : MonoBehaviour
 
         if (survivor == null)
         {
-            Debug.LogError("Setup called with a null survivor.");
+            Debug.LogError("SurvivorListItemUI: Setup called with a null survivor.");
+            gameObject.name = "Survivor (NULL DATA)";
             return;
         }
 
+        gameObject.name = $"Survivor ({survivor.survivorName})";
+        Debug.Log($"Setting up Survivor UI for: {survivor.survivorName}");
+
         // --- Populate Shared Info ---
-        if(survivorNameText != null) survivorNameText.text = survivor.survivorName;
-        if(back_survivorNameText != null) back_survivorNameText.text = survivor.survivorName;
+        if(survivorNameText != null)
+        {
+            survivorNameText.text = survivor.survivorName;
+            Debug.Log($"  - Set survivorNameText to: {survivor.survivorName}");
+        }
+        if(back_survivorNameText != null)
+        {
+            back_survivorNameText.text = survivor.survivorName;
+            Debug.Log($"  - Set back_survivorNameText to: {survivor.survivorName}");
+        }
 
         // --- Populate Traits on the Back ---
         if(back_traitsText != null)
@@ -65,15 +78,18 @@ public class SurvivorListItemUI : MonoBehaviour
             if (survivor.traits == null || survivor.traits.Count == 0)
             {
                 back_traitsText.text = "<i>No Traits</i>";
+                Debug.Log("  - Survivor has no traits.");
             }
             else
             {
                 StringBuilder traitsBuilder = new StringBuilder();
-                foreach (var trait in survivor.traits)
+                // Filter out null traits before iterating
+                foreach (var trait in survivor.traits.Where(t => t != null))
                 {
                     traitsBuilder.AppendLine($"<b>{trait.traitName}</b>: {trait.description}");
                 }
                 back_traitsText.text = traitsBuilder.ToString();
+                Debug.Log($"  - Set traits text to: {traitsBuilder.ToString().Trim()}");
             }
         }
 

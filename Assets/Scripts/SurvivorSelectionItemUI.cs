@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Linq;
 
 public class SurvivorSelectionItemUI : MonoBehaviour
 {
@@ -20,18 +21,29 @@ public class SurvivorSelectionItemUI : MonoBehaviour
         assignedSurvivor = survivor;
         survivorCampUI = owningUI;
 
-        survivorNameText.text = survivor.survivorName;
-
-        if (survivor.traits != null && survivor.traits.Count > 0)
+        if (survivorNameText != null)
         {
-            survivorTraitsText.text = string.Join(", ", survivor.traits.ConvertAll(t => t.traitName));
-        }
-        else
-        {
-            survivorTraitsText.text = "<i>No Traits</i>";
+            survivorNameText.text = survivor.survivorName;
         }
 
-        selectionToggle.onValueChanged.AddListener(OnToggleChanged);
+        if (survivorTraitsText != null)
+        {
+            if (survivor.traits != null && survivor.traits.Count > 0)
+            {
+                // Use LINQ to filter out null traits before trying to access their properties.
+                var validTraits = survivor.traits.Where(t => t != null).Select(t => t.traitName);
+                survivorTraitsText.text = string.Join(", ", validTraits);
+            }
+            else
+            {
+                survivorTraitsText.text = "<i>No Traits</i>";
+            }
+        }
+
+        if (selectionToggle != null)
+        {
+            selectionToggle.onValueChanged.AddListener(OnToggleChanged);
+        }
     }
 
     /// <summary>
