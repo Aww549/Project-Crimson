@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
+using System.Linq;
 
 public class MissionListItemUI : MonoBehaviour
 {
@@ -7,27 +9,41 @@ public class MissionListItemUI : MonoBehaviour
     public TextMeshProUGUI missionNameText;
     public TextMeshProUGUI missionDurationText;
     public TextMeshProUGUI missionRewardText;
+    public Button selectMissionButton;
 
     private MissionData assignedMission;
-    private SurvivorCampUI survivorCampUI; // Changed from SanctuaryUI
+    private SurvivorCampUI survivorCampUI;
 
-    /// <summary>
-    /// Populates the UI elements with data from a specific mission.
-    /// </summary>
-    public void Setup(MissionData missionData, SurvivorCampUI owningUI) // Changed from SanctuaryUI
+    public void Setup(MissionData missionData, SurvivorCampUI owningUI)
     {
         assignedMission = missionData;
         survivorCampUI = owningUI;
 
-        missionNameText.text = missionData.missionName;
-        missionDurationText.text = $"{missionData.durationHours} Hours";
-        missionRewardText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
+        if (missionNameText != null) missionNameText.text = missionData.missionName;
+        if (missionDurationText != null) missionDurationText.text = $"{missionData.durationHours} Hours";
+        if (missionRewardText != null) missionRewardText.text = $"Reward: {missionData.baseRewardAmount} {missionData.rewardType}";
+
+        if (selectMissionButton != null)
+        {
+            selectMissionButton.onClick.RemoveAllListeners();
+            selectMissionButton.onClick.AddListener(OnMissionClicked);
+        }
     }
 
-    /// <summary>
-    /// Called when the player clicks this mission item. Tells the main UI to open the details panel.
-    /// </summary>
-    public void OnMissionClicked()
+    public void UpdateStatus()
+    {
+        if (assignedMission == null || GameDataManager.Instance == null) return;
+
+        bool isInProgress = GameDataManager.Instance.gameData.activeMissions
+            .Any(m => m.missionDataName == assignedMission.name);
+
+        if (selectMissionButton != null)
+        {
+            selectMissionButton.interactable = !isInProgress;
+        }
+    }
+
+    private void OnMissionClicked()
     {
         if (survivorCampUI != null)
         {

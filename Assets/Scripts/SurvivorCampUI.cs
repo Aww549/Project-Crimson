@@ -158,6 +158,7 @@ public class SurvivorCampUI : MonoBehaviour
                 if (itemUI != null)
                 {
                     itemUI.Setup(mission, this); // 'this' is the SurvivorCampUI instance
+                    itemUI.UpdateStatus(); // Check if the mission is already in progress
                     spawnedMissionItems.Add(itemGO);
                 }
             }
