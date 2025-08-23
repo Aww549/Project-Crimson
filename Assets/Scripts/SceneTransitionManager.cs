@@ -10,7 +10,7 @@ public class SceneTransitionManager : MonoBehaviour
         {
             if (_instance == null)
             {
-                _instance = FindObjectOfType<SceneTransitionManager>();
+                _instance = FindFirstObjectByType<SceneTransitionManager>();
                 if (_instance == null)
                 {
                     GameObject go = new GameObject("SceneTransitionManager");
@@ -22,8 +22,8 @@ public class SceneTransitionManager : MonoBehaviour
         }
     }
 
-    public const string CAMP_SCENE = "CampScene";
-    public const string MISSIONS_SCENE = "MissionsScene";
+    public const string CAMP_SCENE = "SurvivorCamp";
+    public const string MISSIONS_SCENE = "MissionUI";
 
     void Awake()
     {

@@ -11,6 +11,9 @@ public class ActiveMission
     public List<string> assignedSurvivorIds;
     public long missionEndTimeTicks;
     public float finalSuccessChance;
+
+    // New for Claim flow
+    public bool isReadyToClaim;
 }
 
 [Serializable]
@@ -30,8 +33,6 @@ public class GameData
     public int survivorsRescuedThisRun;
     public float survivorPityChance;
 
-    // DEFINITIVE FIX: We store the NAME of the archetype (a string), not the object itself.
-    // This is robust and serializes correctly.
     public string rescuedSurvivorArchetypeName;
 
     public GameData()
@@ -81,14 +82,13 @@ public class GameDataManager : MonoBehaviour
     public void SetRescuedSurvivor(SurvivorArchetype archetype)
     {
         gameData.survivorsRescuedThisRun++;
-        // DEFINITIVE FIX: We store the archetype's name, which is serializable.
         if (archetype != null)
         {
             gameData.rescuedSurvivorArchetypeName = archetype.name;
         }
     }
 
-    // --- Unchanged Methods ---
+    // Persistence
     #region
     public void LoadGame()
     {
@@ -101,6 +101,39 @@ public class GameDataManager : MonoBehaviour
         {
             gameData = new GameData();
         }
+
+        PostLoadFixups();
+    }
+
+    private void PostLoadFixups()
+    {
+        if (gameData == null)
+        {
+            gameData = new GameData();
+            return;
+        }
+
+        if (gameData.sanctuarySurvivors == null)
+            gameData.sanctuarySurvivors = new List<Survivor>();
+        if (gameData.activeMissions == null)
+            gameData.activeMissions = new List<ActiveMission>();
+
+        foreach (var s in gameData.sanctuarySurvivors)
+        {
+            if (s == null) continue;
+            if (s.traits == null) s.traits = new List<Trait>();
+            if (s.assignedMissionId == null) s.assignedMissionId = string.Empty;
+            if (string.IsNullOrEmpty(s.survivorId)) s.survivorId = Guid.NewGuid().ToString();
+            if (string.IsNullOrEmpty(s.survivorName)) s.survivorName = "Unnamed";
+        }
+
+        foreach (var m in gameData.activeMissions)
+        {
+            if (m == null) continue;
+            if (m.assignedSurvivorIds == null) m.assignedSurvivorIds = new List<string>();
+            // Default for older saves
+            // If the field didn't exist, it will be 'false' by default anyway.
+        }
     }
 
     public void SaveGame()
@@ -108,7 +141,10 @@ public class GameDataManager : MonoBehaviour
         string json = JsonUtility.ToJson(gameData, true);
         File.WriteAllText(saveFilePath, json);
     }
+    #endregion
 
+    // Upgrades and helpers
+    #region
     public void AddScrap(int amount)
     {
         gameData.totalScrap += amount;

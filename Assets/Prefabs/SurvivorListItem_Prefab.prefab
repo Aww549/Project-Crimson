@@ -60,7 +60,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -926,10 +926,9 @@ MonoBehaviour:
   backPanel: {fileID: 6708753851512616314}
   onMissionOverlay: {fileID: 357330276150910386}
   survivorNameText: {fileID: 3122536699254271789}
-  survivorIcon: {fileID: 8279237033347125910}
+  missionTimerText: {fileID: 4281258105053802872}
   back_survivorNameText: {fileID: 7912485187635063893}
   back_traitsText: {fileID: 7650444134979273519}
-  missionTimerText: {fileID: 4281258105053802872}
 --- !u!1 &7242769793537463004
 GameObject:
   m_ObjectHideFlags: 0

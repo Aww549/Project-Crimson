@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 13339103}
   - component: {fileID: 13339102}
   - component: {fileID: 13339101}
-  - component: {fileID: 13339100}
+  - component: {fileID: 13339105}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -139,45 +139,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &13339100
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 13339099}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56b6955a44667a34da97c1e31288a6a1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  upgradesCG: {fileID: 2080819533}
-  sanctuaryMainCG: {fileID: 0}
-  sanctuaryDetailsCG: {fileID: 0}
-  sanctuarySelectionCG: {fileID: 0}
-  mainGameSceneName: SampleScene
-  mainMenuSceneName: MainMenu
-  totalScrapText: {fileID: 960709985}
-  damageLevelText: {fileID: 211362602}
-  damageCostText: {fileID: 121693954}
-  startingSurvivorsLevelText: {fileID: 1069444939}
-  startingSurvivorsCostText: {fileID: 1966820829}
-  scrapValueLevelText: {fileID: 710814311}
-  scrapValueCostText: {fileID: 712480693}
-  firstAidKitLevelText: {fileID: 1288065776}
-  firstAidKitCostText: {fileID: 571207754}
-  survivorListContent: {fileID: 0}
-  survivorListItemPrefab: {fileID: 6834452187989381764, guid: 6417893133faba94587c6c784df7ead9, type: 3}
-  missionListContent: {fileID: 0}
-  missionListItemPrefab: {fileID: 6502213951653954478, guid: ed8c7fdd8695f004d9db303e2f200bb8, type: 3}
-  missionNameText: {fileID: 0}
-  missionDescriptionText: {fileID: 0}
-  missionRewardText: {fileID: 0}
-  missionDurationText: {fileID: 0}
-  missionSuccessChanceText: {fileID: 0}
-  survivorSelectionContent: {fileID: 0}
-  survivorSelectionItemPrefab: {fileID: 5661168597433192331, guid: 27170f92e26cd3140b76c23dbdf8d20d, type: 3}
-  startMissionButton: {fileID: 1397196027}
 --- !u!114 &13339101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,6 +223,33 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &13339105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 13339099}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c3bb636fa6738848a0f90d20ac41e0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MissionsButton: {fileID: 1397196027}
+  BackButton: {fileID: 319313884}
+  TotalScrap_Text: {fileID: 960709985}
+  DamageLevel_Text: {fileID: 211362602}
+  BuyDamage_Button: {fileID: 1271405938}
+  DamageCost_Text: {fileID: 121693954}
+  StartingSurvivorsLevel_Text: {fileID: 1069444939}
+  BuyStartingSurvivors_Button: {fileID: 702715897}
+  StartingSurvivorsCost_Text: {fileID: 1966820829}
+  ScrapValueLevel_Text: {fileID: 710814311}
+  BuyScrapValue_Button: {fileID: 788249359}
+  ScrapValueCost_Text: {fileID: 712480693}
+  FirstAidKitLevel_Text: {fileID: 1288065776}
+  BuyFirstAidKit_Button: {fileID: 760033610}
+  FirstAidKitCost_Text: {fileID: 571207754}
 --- !u!1 &27842472
 GameObject:
   m_ObjectHideFlags: 0
@@ -655,9 +643,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: GoToMainMenu
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnExitToMainMenu
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1411,9 +1399,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: OnPurchaseStartingSurvivorsClicked
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnPurchaseCombatTraining
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1816,9 +1804,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: OnPurchaseFirstAidKitClicked
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnPurchaseFirstAidKit
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1949,9 +1937,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: OnPurchaseScrapValueClicked
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnPurchaseScrapScavenging
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2756,9 +2744,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: OnPurchaseDamageClicked
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnPurchaseFortifyAmmo
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3090,9 +3078,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 13339100}
-        m_TargetAssemblyTypeName: SurvivorCampUI, Assembly-CSharp
-        m_MethodName: ShowSanctuaryPanel
+      - m_Target: {fileID: 13339105}
+        m_TargetAssemblyTypeName: CampUI, Assembly-CSharp
+        m_MethodName: OnMissionsButtonClick
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3515,7 +3503,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -380, y: 189}
+  m_AnchoredPosition: {x: -312, y: 131}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2080819532

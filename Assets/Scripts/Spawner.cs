@@ -35,6 +35,7 @@ public class Spawner : MonoBehaviour
     public float runnerWaveChance = 0.15f;
     [Range(0, 1)]
     public float baseSurvivorSpawnChance = 0.1f; // The base chance before the pity timer.
+    public float pityChanceIncrease = 0.05f; // How much the chance increases when a survivor doesn't spawn.
 
     [Header("Difficulty Scaling")]
     private int waveNumber = 0;
@@ -117,6 +118,20 @@ public class Spawner : MonoBehaviour
 
     void SpawnLootWave()
     {
+        if (GameDataManager.Instance == null)
+        {
+            Debug.LogError("GameDataManager instance not found in SpawnLootWave. Spawning only scrap.");
+            for (int i = 0; i < 3; i++)
+            {
+                int randomLane = Random.Range(0, 2);
+                float xPos = (randomLane - 0.5f) * laneDistance;
+                float zPos = nextSpawnZ + (i * (zombieSpacing / 2));
+                Vector3 spawnPos = new Vector3(xPos, 0.5f, zPos);
+                Instantiate(scrapPrefab, spawnPos, Quaternion.identity);
+            }
+            return;
+        }
+
         int scrapToSpawn = 3;
 
         // DEFINITIVE FIX: We now check our internal flag instead of the GameDataManager.
@@ -132,6 +147,7 @@ public class Spawner : MonoBehaviour
             survivorWillSpawn = true;
             survivorSpawnIndex = Random.Range(0, scrapToSpawn);
             GameDataManager.Instance.gameData.survivorPityChance = 0f;
+            Debug.Log("A survivor has spawned! Pity timer reset.");
 
             // DEFINITIVE FIX: Set the flag to true the moment we decide to spawn a survivor.
             survivorHasBeenSpawnedThisRun = true;
